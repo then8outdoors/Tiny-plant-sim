@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Tiny Plant Sim 1.0</title>
+  <title>Tiny Plant Sim 1.2</title>
   
-  <!-- 90s Pixel Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -51,7 +50,6 @@
       -webkit-user-select: none;
     }
     
-    /* CRT Scanline Filter */
     .crt-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -61,7 +59,6 @@
       pointer-events: none;
     }
     
-    /* Retro UI Panels & Buttons */
     .retro-panel {
       background-color: #ffffff;
       border: 3px solid #334155;
@@ -90,19 +87,11 @@
       transform: translate(2px, 2px);
     }
     
-    /* Crisp 8-Bit Rendering */
-    svg.pixelated {
-      shape-rendering: crispEdges;
-    }
+    svg.pixelated { shape-rendering: crispEdges; }
 
-    /* 2-Frame Retro Looping Idle Animations */
     @keyframes retroBop {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-2px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
     }
     .plant-idle-anim {
       animation: retroBop 1.2s steps(2, start) infinite;
@@ -110,28 +99,31 @@
     }
 
     @keyframes bugTwitch {
-      0%, 100% {
-        transform: translate(0, 0);
-      }
-      50% {
-        transform: translate(1px, -1px);
-      }
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(1px, -1px); }
     }
-    .bug-idle-anim {
-      animation: bugTwitch 0.4s steps(2, start) infinite;
-    }
+    .bug-idle-anim { animation: bugTwitch 0.4s steps(2, start) infinite; }
 
     @keyframes flowerPulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.1);
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
     .flower-anim {
       animation: flowerPulse 0.8s steps(2, start) infinite;
       transform-origin: center;
+    }
+
+    /* Sunroom Background */
+    .greenhouse-grid {
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.05) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 2px, transparent 2px);
+      background-size: 50% 33.33%;
+    }
+    .dark .greenhouse-grid {
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.07) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.07) 2px, transparent 2px);
     }
   </style>
 </head>
@@ -143,71 +135,19 @@
     const { useState, useEffect } = React;
 
     const PLANT_ARCHETYPES = {
-      cactus: {
-        name: 'DESERT CACTUS',
-        tagline: 'LOVES INTENSE SUN & LITTLE WATER.',
-        moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65],
-        color: '#16a34a', leafColor: '#15803d'
-      },
-      succulent: {
-        name: 'FLESHY SUCC',
-        tagline: 'THRIVES IN WARMTH & DRY SOIL.',
-        moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75],
-        color: '#0d9488', leafColor: '#0f766e'
-      },
-      fern: {
-        name: 'CANOPY FERN',
-        tagline: 'CRAVES MOISTURE & GENTLE SHADE.',
-        moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95],
-        color: '#22c55e', leafColor: '#16a34a'
-      },
-      leafy: {
-        name: 'BROAD AROID',
-        tagline: 'BALANCED LIGHT & STEADY WARMTH.',
-        moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90],
-        color: '#4ade80', leafColor: '#22c55e'
-      },
-      bonsai: {
-        name: 'PINE BONSAI',
-        tagline: 'ANCIENT TREE CRAVING STRICT CARE.',
-        moisture: [35, 60], sunlight: [45, 75], temp: [60, 80], soil: [60, 95],
-        color: '#78350f', leafColor: '#065f46'
-      },
-      flytrap: {
-        name: 'SNAP TRAP',
-        tagline: 'CARNIVOROUS SPROUT. WARM & DAMP.',
-        moisture: [65, 95], sunlight: [50, 80], temp: [70, 90], soil: [20, 55],
-        color: '#dc2626', leafColor: '#16a34a'
-      },
-      orchid: {
-        name: 'MOTH ORCHID',
-        tagline: 'TROPICAL BEAUTY. HUMID AIR.',
-        moisture: [50, 80], sunlight: [30, 60], temp: [68, 84], soil: [40, 75],
-        color: '#d946ef', leafColor: '#84cc16'
-      },
-      snake: {
-        name: 'VIPER BLADE',
-        tagline: 'TOUGH AS NAILS. HARD TO KILL.',
-        moisture: [10, 40], sunlight: [20, 85], temp: [55, 90], soil: [20, 80],
-        color: '#eab308', leafColor: '#15803d'
-      },
-      bamboo: {
-        name: 'LUCKY BAMBOO',
-        tagline: 'HAPPY IN PURE WATER & SHADE.',
-        moisture: [60, 95], sunlight: [25, 60], temp: [65, 85], soil: [35, 80],
-        color: '#84cc16', leafColor: '#4d7c0f'
-      },
-      sunflower: {
-        name: 'SUN CHASER',
-        tagline: 'WORSHIPS THE BLAZING SUN.',
-        moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90],
-        color: '#ca8a04', leafColor: '#22c55e'
-      }
+      cactus: { name: 'DESERT CACTUS', tagline: 'LOVES INTENSE SUN & LITTLE WATER.', moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65], color: '#16a34a', leafColor: '#15803d' },
+      succulent: { name: 'FLESHY SUCC', tagline: 'THRIVES IN WARMTH & DRY SOIL.', moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75], color: '#0d9488', leafColor: '#0f766e' },
+      fern: { name: 'CANOPY FERN', tagline: 'CRAVES MOISTURE & GENTLE SHADE.', moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95], color: '#22c55e', leafColor: '#16a34a' },
+      leafy: { name: 'BROAD AROID', tagline: 'BALANCED LIGHT & STEADY WARMTH.', moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90], color: '#4ade80', leafColor: '#22c55e' },
+      bonsai: { name: 'PINE BONSAI', tagline: 'ANCIENT TREE CRAVING STRICT CARE.', moisture: [35, 60], sunlight: [45, 75], temp: [60, 80], soil: [60, 95], color: '#78350f', leafColor: '#065f46' },
+      flytrap: { name: 'SNAP TRAP', tagline: 'CARNIVOROUS SPROUT. WARM & DAMP.', moisture: [65, 95], sunlight: [50, 80], temp: [70, 90], soil: [20, 55], color: '#dc2626', leafColor: '#16a34a' },
+      orchid: { name: 'MOTH ORCHID', tagline: 'TROPICAL BEAUTY. HUMID AIR.', moisture: [50, 80], sunlight: [30, 60], temp: [68, 84], soil: [40, 75], color: '#d946ef', leafColor: '#84cc16' },
+      snake: { name: 'VIPER BLADE', tagline: 'TOUGH AS NAILS. HARD TO KILL.', moisture: [10, 40], sunlight: [20, 85], temp: [55, 90], soil: [20, 80], color: '#eab308', leafColor: '#15803d' },
+      bamboo: { name: 'LUCKY BAMBOO', tagline: 'HAPPY IN PURE WATER & SHADE.', moisture: [60, 95], sunlight: [25, 60], temp: [65, 85], soil: [35, 80], color: '#84cc16', leafColor: '#4d7c0f' },
+      sunflower: { name: 'SUN CHASER', tagline: 'WORSHIPS THE BLAZING SUN.', moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90], color: '#ca8a04', leafColor: '#22c55e' }
     };
 
-    function getArch(type) {
-      return PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy'];
-    }
+    function getArch(type) { return PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy']; }
 
     function safeLoadSlot(slotIdx) {
       try {
@@ -215,19 +155,15 @@
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (parsed && parsed.conditions && parsed.ideals) {
-          if (!PLANT_ARCHETYPES[parsed.type]) {
-            parsed.type = 'leafy';
-          }
+          if (!PLANT_ARCHETYPES[parsed.type]) parsed.type = 'leafy';
           return parsed;
         }
         return null;
-      } catch (err) {
-        return null;
-      }
+      } catch (err) { return null; }
     }
 
     function generateNewPlant(slotNum, customName) {
-      const types = ['cactus', 'succulent', 'fern', 'leafy', 'bonsai', 'flytrap', 'orchid', 'snake', 'bamboo', 'sunflower'];
+      const types = Object.keys(PLANT_ARCHETYPES);
       const chosenType = types[Math.floor(Math.random() * types.length)];
       const archetype = getArch(chosenType);
       const randomReveal = Math.floor(Math.random() * (12 - 6 + 1)) + 6;
@@ -244,64 +180,257 @@
         potColor: ['#ea580c', '#d97706', '#059669', '#475569', '#7c3aed', '#0284c7'][slotNum % 6],
         conditions: { moisture: 50, sunlight: 50, temperature: 72, soilHealth: 85, infestation: 0 },
         ideals: {
-          moisture: [archetype.moisture[0], archetype.moisture[1]],
-          sunlight: [archetype.sunlight[0], archetype.sunlight[1]],
-          temp: [archetype.temp[0], archetype.temp[1]],
-          soil: [archetype.soil[0], archetype.soil[1]]
+          moisture: [archetype.moisture[0], archetype.moisture[1]], sunlight: [archetype.sunlight[0], archetype.sunlight[1]],
+          temp: [archetype.temp[0], archetype.temp[1]], soil: [archetype.soil[0], archetype.soil[1]]
         }
       };
     }
 
-    // Blocky Icons
-    const DropletIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L12 2 L16 10 L18 14 L18 18 L16 22 L8 22 L6 18 L6 14 L8 10 Z"/></svg>
-    );
-    const SunIcon = () => (
-      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8"/><rect x="11" y="2" width="2" height="4"/><rect x="11" y="18" width="2" height="4"/><rect x="2" y="11" width="4" height="2"/><rect x="18" y="11" width="4" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/><rect x="4" y="18" width="2" height="2"/><rect x="18" y="4" width="2" height="2"/></svg>
-    );
-    const MoonIcon = () => (
-      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="6" height="2"/><rect x="6" y="4" width="4" height="4"/><rect x="4" y="8" width="4" height="8"/><rect x="6" y="16" width="4" height="4"/><rect x="10" y="20" width="6" height="2"/><rect x="14" y="16" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="14" y="4" width="4" height="4"/></svg>
-    );
-    const ThermometerIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="4" height="14"/><rect x="8" y="14" width="8" height="8"/></svg>
-    );
-    const BugIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="6" width="8" height="12"/><rect x="4" y="8" width="4" height="2"/><rect x="16" y="8" width="4" height="2"/><rect x="4" y="14" width="4" height="2"/><rect x="16" y="14" width="4" height="2"/><rect x="10" y="2" width="1" height="4"/><rect x="13" y="2" width="1" height="4"/></svg>
-    );
-    const ShovelIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="14,2 22,2 22,10 12,20 4,20 4,12"/><rect x="4" y="14" width="6" height="6" fill="#111827"/></svg>
-    );
-    const SprayIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="14"/><rect x="10" y="4" width="4" height="4"/><rect x="4" y="4" width="6" height="2"/><rect x="2" y="4" width="2" height="6"/></svg>
-    );
-    const ScissorsIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><polygon points="10,10 20,2 20,6 12,12"/><polygon points="10,14 20,22 20,18 12,12"/><rect x="6" y="6" width="2" height="2" fill="#111827"/><rect x="6" y="16" width="2" height="2" fill="#111827"/></svg>
-    );
-    const PencilIcon = () => (
-      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="16,2 22,8 8,22 2,22 2,16"/></svg>
-    );
-    const ArrowLeftIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>
-    );
-    const TrashIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>
-    );
+    // Icons
+    const DropletIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L12 2 L16 10 L18 14 L18 18 L16 22 L8 22 L6 18 L6 14 L8 10 Z"/></svg>;
+    const SunIcon = () => <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8"/><rect x="11" y="2" width="2" height="4"/><rect x="11" y="18" width="2" height="4"/><rect x="2" y="11" width="4" height="2"/><rect x="18" y="11" width="4" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/><rect x="4" y="18" width="2" height="2"/><rect x="18" y="4" width="2" height="2"/></svg>;
+    const MoonIcon = () => <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="6" height="2"/><rect x="6" y="4" width="4" height="4"/><rect x="4" y="8" width="4" height="8"/><rect x="6" y="16" width="4" height="4"/><rect x="10" y="20" width="6" height="2"/><rect x="14" y="16" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="14" y="4" width="4" height="4"/></svg>;
+    const ThermometerIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="4" height="14"/><rect x="8" y="14" width="8" height="8"/></svg>;
+    const BugIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="6" width="8" height="12"/><rect x="4" y="8" width="4" height="2"/><rect x="16" y="8" width="4" height="2"/><rect x="4" y="14" width="4" height="2"/><rect x="16" y="14" width="4" height="2"/><rect x="10" y="2" width="1" height="4"/><rect x="13" y="2" width="1" height="4"/></svg>;
+    const ShovelIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="14,2 22,2 22,10 12,20 4,20 4,12"/><rect x="4" y="14" width="6" height="6" fill="#111827"/></svg>;
+    const SprayIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="14"/><rect x="10" y="4" width="4" height="4"/><rect x="4" y="4" width="6" height="2"/><rect x="2" y="4" width="2" height="6"/></svg>;
+    const ScissorsIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><polygon points="10,10 20,2 20,6 12,12"/><polygon points="10,14 20,22 20,18 12,12"/><rect x="6" y="6" width="2" height="2" fill="#111827"/><rect x="6" y="16" width="2" height="2" fill="#111827"/></svg>;
+    const PencilIcon = () => <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="16,2 22,8 8,22 2,22 2,16"/></svg>;
+    const ArrowLeftIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>;
+    const TrashIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>;
+
+    // Extracted SVG Component to allow re-use in Sunroom
+    const PlantVisual = ({ plant, isBlooming, soilBaseY = 168, scale = 1 }) => {
+      if (!plant) return null;
+      const arch = getArch(plant.type);
+      const c = plant.conditions || {};
+      const moisture = c.moisture ?? 50;
+      const mMin = plant.ideals?.moisture?.[0] ?? 0;
+      const mMax = plant.ideals?.moisture?.[1] ?? 100;
+      
+      const bodyCol = plant.isDead ? '#64748b' : plant.health < 35 && moisture < mMin ? '#d97706' : plant.health < 35 && moisture > mMax ? '#064e3b' : arch.color;
+      const leafCol = plant.isDead ? '#475569' : plant.health < 35 && moisture < mMin ? '#f59e0b' : plant.health < 35 && moisture > mMax ? '#047857' : arch.leafColor;
+      
+      const growthProgress = Math.min((plant.age || 1) / 18, 1);
+      const plantHeight = 24 + growthProgress * 70;
+      const stemTopY = soilBaseY - plantHeight;
+      const strokeW = 4;
+
+      return (
+        <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
+          <g transform={`scale(${scale}) translate(${100 * (1 - scale)}, ${215 * (1 - scale)})`}>
+            
+            {(c.infestation > 10) && (
+              <g fill="#ff003c" className="bug-idle-anim">
+                <rect x="85" y={soilBaseY - 30} width="4" height="4" /><rect x="115" y={soilBaseY - 45} width="4" height="4" />
+                <rect x="102" y={soilBaseY - 60} width="4" height="4" /><rect x="75" y={soilBaseY - 15} width="4" height="4" />
+              </g>
+            )}
+
+            <g className={plant.isDead ? '' : 'plant-idle-anim'}>
+              {plant.isDead ? (
+                <g stroke="#64748b" strokeWidth="6" fill="none">
+                  <polyline points="100,170 102,140 120,135 135,132 135,155" />
+                  <polyline points="112,140 125,150 120,162" />
+                </g>
+              ) : !plant.revealed ? (
+                <g strokeWidth={strokeW}>
+                  <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} />
+                  <polyline points={`100,${stemTopY} 85,${stemTopY - 5} 78,${stemTopY}`} stroke={leafCol} fill="none"/>
+                  <polyline points={`100,${stemTopY} 115,${stemTopY - 5} 122,${stemTopY}`} stroke={leafCol} fill="none"/>
+                </g>
+              ) : plant.type === 'cactus' ? (
+                <g>
+                  <rect x="88" y={stemTopY} width="24" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth={strokeW} />
+                  <line x1="84" y1={stemTopY + 20} x2="116" y2={stemTopY + 20} stroke="#ffea00" strokeWidth="2" />
+                  <line x1="84" y1={stemTopY + 45} x2="116" y2={stemTopY + 45} stroke="#ffea00" strokeWidth="2" />
+                  {plant.age >= 10 && <polyline points={`88,${stemTopY + 35} 75,${stemTopY + 35} 75,${stemTopY + 15} 82,${stemTopY + 15}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
+                  {plant.age >= 13 && <polyline points={`112,${stemTopY + 48} 125,${stemTopY + 48} 125,${stemTopY + 28} 118,${stemTopY + 28}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
+                  {isBlooming && <rect x="94" y={stemTopY - 12} width="12" height="12" fill="#ff003c" className="flower-anim" />}
+                </g>
+              ) : plant.type === 'succulent' ? (
+                <g fill={leafCol} stroke="#000" strokeWidth="2">
+                  <rect x="66" y={soilBaseY - 20} width="68" height="20" />
+                  <rect x="76" y={soilBaseY - 30} width="48" height="18" />
+                  <rect x="86" y={soilBaseY - 40} width="28" height="16" fill={bodyCol} />
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <polyline points={`100,${soilBaseY - 30} 118,${soilBaseY - 60} 122,${soilBaseY - 80}`} stroke="#16a34a" strokeWidth="4" fill="none" />
+                      <rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'fern' ? (
+                <g stroke={bodyCol} fill="none" strokeWidth={strokeW}>
+                  <line x1="100" y1={soilBaseY} x2="98" y2={stemTopY} />
+                  {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
+                    const yPos = soilBaseY - plantHeight * frac;
+                    const spread = 20 + frac * 16;
+                    return (
+                      <g key={idx}>
+                        <polyline points={`100,${yPos} ${100 - spread},${yPos - 10} ${100 - spread - 4},${yPos + 4}`} stroke={leafCol} />
+                        <polyline points={`100,${yPos} ${100 + spread},${yPos - 10} ${100 + spread + 4},${yPos + 4}`} stroke={leafCol} />
+                      </g>
+                    );
+                  })}
+                  {isBlooming && (
+                    <g fill="#0284c7" stroke="none" className="flower-anim">
+                      <rect x="68" y={stemTopY + 16} width="6" height="6" /><rect x="126" y={stemTopY + 20} width="6" height="6" /><rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'bonsai' ? (
+                <g>
+                  <polyline points={`100,${soilBaseY} 94,${soilBaseY - 20} 114,${soilBaseY - 42} 98,${stemTopY}`} stroke={bodyCol} strokeWidth="10" strokeLinecap="square" fill="none" />
+                  <line x1="110" y1={soilBaseY - 32} x2="132" y2={soilBaseY - 38} stroke={bodyCol} strokeWidth="6" />
+                  <line x1="96" y1={soilBaseY - 45} x2="72" y2={soilBaseY - 50} stroke={bodyCol} strokeWidth="6" />
+                  <rect x="60" y={soilBaseY - 58} width="36" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <rect x="116" y={soilBaseY - 46} width="32" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <rect x="80" y={stemTopY - 8} width="42" height="14" fill={leafCol} stroke="#000" strokeWidth="2" />
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <rect x="76" y={soilBaseY - 64} width="6" height="6" fill="#f472b6" /><rect x="126" y={soilBaseY - 52} width="6" height="6" fill="#f472b6" /><rect x="98" y={stemTopY - 14} width="8" height="8" fill="#f472b6" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'flytrap' ? (
+                <g>
+                  <polyline points={`100,${soilBaseY} 82,${stemTopY + 24} 66,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                  <polyline points={`100,${soilBaseY} 118,${stemTopY + 24} 134,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                  <polyline points={`100,${soilBaseY} 100,${stemTopY + 12}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                  <rect x="52" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <polyline points={`52,${stemTopY - 12} 56,${stemTopY - 18} 60,${stemTopY - 12} 64,${stemTopY - 18} 68,${stemTopY - 12} 72,${stemTopY - 18} 76,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
+                  <rect x="124" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <polyline points={`124,${stemTopY - 12} 128,${stemTopY - 18} 132,${stemTopY - 12} 136,${stemTopY - 18} 140,${stemTopY - 12} 144,${stemTopY - 18} 148,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
+                  <rect x="88" y={stemTopY} width="24" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <polyline points={`88,${stemTopY} 92,${stemTopY - 6} 96,${stemTopY} 100,${stemTopY - 6} 104,${stemTopY} 108,${stemTopY - 6} 112,${stemTopY}`} stroke="#fff" strokeWidth="2" fill="none" />
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <line x1="100" y1={soilBaseY - 20} x2="100" y2={stemTopY - 24} stroke="#16a34a" strokeWidth="2" />
+                      <rect x="96" y={stemTopY - 30} width="8" height="8" fill="#ffffff" /><rect x="98" y={stemTopY - 28} width="4" height="4" fill="#facc15" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'orchid' ? (
+                <g>
+                  <polygon points={`100,${soilBaseY} 60,${soilBaseY - 8} 68,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <polygon points={`100,${soilBaseY} 140,${soilBaseY - 8} 132,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <polyline points={`100,${soilBaseY} 96,${soilBaseY - 35} 106,${soilBaseY - 70} 122,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                  <rect x="114" y={stemTopY - 6} width="16" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <rect x="119" y={stemTopY - 1} width="6" height="6" fill="#fef08a" />
+                  {plant.age >= 9 && (
+                    <g>
+                      <rect x="98" y={soilBaseY - 55} width="14" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                      <rect x="103" y={soilBaseY - 51} width="4" height="4" fill="#fef08a" />
+                    </g>
+                  )}
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <rect x="126" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" /><rect x="110" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'snake' ? (
+                <g>
+                  <polygon points={`100,${soilBaseY} 88,${stemTopY + 10} 98,${stemTopY - 15} 106,${stemTopY + 15}`} fill={leafCol} stroke={bodyCol} strokeWidth="4" />
+                  <polygon points={`90,${soilBaseY} 74,${stemTopY + 30} 82,${stemTopY + 10} 92,${stemTopY + 30}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
+                  <polygon points={`110,${soilBaseY} 124,${stemTopY + 35} 118,${stemTopY + 15} 108,${stemTopY + 35}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
+                  <line x1="94" y1={stemTopY + 15} x2="102" y2={stemTopY + 15} stroke={bodyCol} strokeWidth="2" />
+                  <line x1="92" y1={stemTopY + 35} x2="104" y2={stemTopY + 35} stroke={bodyCol} strokeWidth="2" />
+                  <line x1="90" y1={stemTopY + 55} x2="106" y2={stemTopY + 55} stroke={bodyCol} strokeWidth="2" />
+                  {isBlooming && (
+                    <g className="flower-anim"><rect x="96" y={stemTopY - 24} width="8" height="8" fill="#fef08a" /></g>
+                  )}
+                </g>
+              ) : plant.type === 'bamboo' ? (
+                <g>
+                  <rect x="92" y={stemTopY} width="8" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <line x1="90" y1={stemTopY + 25} x2="102" y2={stemTopY + 25} stroke="#1e293b" strokeWidth="2" />
+                  <line x1="90" y1={stemTopY + 50} x2="102" y2={stemTopY + 50} stroke="#1e293b" strokeWidth="2" />
+                  <line x1="90" y1={stemTopY + 75} x2="102" y2={stemTopY + 75} stroke="#1e293b" strokeWidth="2" />
+                  <rect x="104" y={stemTopY + 20} width="7" height={plantHeight - 20} fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <line x1="102" y1={stemTopY + 45} x2="113" y2={stemTopY + 45} stroke="#1e293b" strokeWidth="2" />
+                  <line x1="102" y1={stemTopY + 70} x2="113" y2={stemTopY + 70} stroke="#1e293b" strokeWidth="2" />
+                  <polyline points={`92,${stemTopY + 5} 74,${stemTopY - 10} 70,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                  <polyline points={`100,${stemTopY + 5} 115,${stemTopY - 12} 120,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                  <polyline points={`108,${stemTopY + 25} 126,${stemTopY + 12} 130,${stemTopY + 20}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <rect x="88" y={stemTopY + 34} width="26" height="6" fill="#ef4444" />
+                      <polygon points={`101,${stemTopY + 40} 95,${stemTopY + 50} 107,${stemTopY + 50}`} fill="#ef4444" />
+                    </g>
+                  )}
+                </g>
+              ) : plant.type === 'sunflower' ? (
+                <g>
+                  <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={leafCol} strokeWidth="5" />
+                  <polygon points={`100,${soilBaseY - plantHeight * 0.4} 72,${soilBaseY - plantHeight * 0.45} 78,${soilBaseY - plantHeight * 0.32}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <polygon points={`100,${soilBaseY - plantHeight * 0.6} 128,${soilBaseY - plantHeight * 0.65} 122,${soilBaseY - plantHeight * 0.52}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                  <rect x="88" y={stemTopY - 12} width="24" height="24" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                  <rect x="94" y={stemTopY - 18} width="12" height="6" fill="#facc15" />
+                  <rect x="94" y={stemTopY + 12} width="12" height="6" fill="#facc15" />
+                  <rect x="82" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
+                  <rect x="112" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
+                  <rect x="94" y={stemTopY - 6} width="12" height="12" fill="#451a03" />
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <rect x="84" y={stemTopY - 16} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY - 16} width="6" height="6" fill="#facc15" />
+                      <rect x="84" y={stemTopY + 10} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY + 10} width="6" height="6" fill="#facc15" />
+                    </g>
+                  )}
+                </g>
+              ) : (
+                <g>
+                  <g fill={leafCol} stroke={colors.stroke || '#000'} strokeWidth="2">
+                    <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} strokeWidth="4" />
+                    <polygon points={`100,${soilBaseY - plantHeight * 0.4} 70,${soilBaseY - plantHeight * 0.5} 62,${soilBaseY - plantHeight * 0.35} 80,${soilBaseY - plantHeight * 0.28}`} />
+                    <polygon points={`100,${soilBaseY - plantHeight * 0.65} 130,${soilBaseY - plantHeight * 0.75} 138,${soilBaseY - plantHeight * 0.6} 120,${soilBaseY - plantHeight * 0.52}`} />
+                    <polygon points={`100,${stemTopY} 85,${stemTopY - 20} 100,${stemTopY - 25} 115,${stemTopY - 20}`} />
+                  </g>
+                  {isBlooming && (
+                    <g className="flower-anim">
+                      <polyline points={`98,${soilBaseY - 15} 84,${soilBaseY - 50} 80,${soilBaseY - 75}`} stroke="#16a34a" strokeWidth="4" fill="none" />
+                      <rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" />
+                      <rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" />
+                    </g>
+                  )}
+                </g>
+              )}
+            </g>
+
+            {/* Static Pot */}
+            <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
+            <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor || '#ea580c'} stroke="#000" strokeWidth="2" />
+          </g>
+        </svg>
+      );
+    };
 
     function App() {
       const [screen, setScreen] = useState('home');
       const [activeSlot, setActiveSlot] = useState(0);
       const [slotsData, setSlotsData] = useState(() => [safeLoadSlot(0), safeLoadSlot(1), safeLoadSlot(2)]);
       const [plant, setPlant] = useState(null);
+      
+      const [sunroomData, setSunroomData] = useState(() => {
+        try {
+          const raw = localStorage.getItem('plant_sunroom');
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      });
+      
       const [toast, setToast] = useState('');
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
       const [tutorialOpen, setTutorialOpen] = useState(false);
+      
       const [darkMode, setDarkMode] = useState(() => {
         try {
           return localStorage.getItem('plant_dark_mode') !== 'false';
-        } catch (e) {
-          return true;
-        }
+        } catch (e) { return true; }
       });
 
       useEffect(() => {
@@ -310,22 +439,22 @@
         } else {
           document.documentElement.classList.remove('dark');
         }
-        try {
-          localStorage.setItem('plant_dark_mode', darkMode);
-        } catch (e) {}
+        try { localStorage.setItem('plant_dark_mode', darkMode); } catch (e) {}
       }, [darkMode]);
 
       useEffect(() => {
         if (!plant) return;
-        try {
-          localStorage.setItem('plant_slot_' + activeSlot, JSON.stringify(plant));
-        } catch (e) {}
+        try { localStorage.setItem('plant_slot_' + activeSlot, JSON.stringify(plant)); } catch (e) {}
         setSlotsData(prev => {
-          const next = [prev[0], prev[1], prev[2]];
+          const next = [...prev];
           next[activeSlot] = plant;
           return next;
         });
       }, [plant, activeSlot]);
+
+      useEffect(() => {
+        try { localStorage.setItem('plant_sunroom', JSON.stringify(sunroomData)); } catch (e) {}
+      }, [sunroomData]);
 
       const showToast = (msg) => {
         setToast(msg);
@@ -339,12 +468,12 @@
         const interval = setInterval(() => {
           setPlant(prev => {
             if (!prev || prev.isDead) return prev;
-
-            let moisture = prev.conditions.moisture;
-            let sunlight = prev.conditions.sunlight;
-            let temperature = prev.conditions.temperature;
-            let soilHealth = prev.conditions.soilHealth;
-            let infestation = prev.conditions.infestation;
+            let c = prev.conditions || {};
+            let moisture = c.moisture ?? 50;
+            let sunlight = c.sunlight ?? 50;
+            let temperature = c.temperature ?? 72;
+            let soilHealth = c.soilHealth ?? 85;
+            let infestation = c.infestation ?? 0;
             let healthDelta = 0;
 
             const moistureDrain = 1.0 + (temperature > 80 ? 0.8 : 0) + (sunlight > 75 ? 0.6 : 0);
@@ -355,13 +484,11 @@
               if (Math.random() < 0.35) infestation = Math.min(100, infestation + 4);
             }
 
-            const mMin = prev.ideals.moisture[0];
-            const mMax = prev.ideals.moisture[1];
-            const sMin = prev.ideals.sunlight[0];
-            const sMax = prev.ideals.sunlight[1];
-            const tMin = prev.ideals.temp[0];
-            const tMax = prev.ideals.temp[1];
-            const soilMin = prev.ideals.soil[0];
+            const idls = prev.ideals || { moisture: [0, 100], sunlight: [0, 100], temp: [0, 100], soil: [0, 100] };
+            const mMin = idls.moisture[0]; const mMax = idls.moisture[1];
+            const sMin = idls.sunlight[0]; const sMax = idls.sunlight[1];
+            const tMin = idls.temp[0]; const tMax = idls.temp[1];
+            const soilMin = idls.soil[0];
 
             if (moisture < mMin) healthDelta -= (mMin - moisture) * 0.15;
             else if (moisture > mMax) healthDelta -= (moisture - mMax) * 0.15;
@@ -377,43 +504,26 @@
             if (soilHealth < soilMin) healthDelta -= 1.2;
             if (infestation > 15) healthDelta -= (infestation - 15) * 0.22;
 
-            const newHealth = Math.max(0, Math.min(100, prev.health + healthDelta));
+            const newHealth = Math.max(0, Math.min(100, (prev.health || 100) + healthDelta));
             const isDead = newHealth <= 0;
 
-            let newAge = prev.age;
+            let newAge = prev.age || 1;
             let newlyRevealed = false;
             let newRevealedState = prev.revealed;
 
             if (!isDead && newHealth > 40) {
-              newAge = +(prev.age + 0.15).toFixed(2);
-              if (!prev.revealed && newAge >= prev.revealAge) {
+              newAge = +(newAge + 0.15).toFixed(2);
+              if (!prev.revealed && newAge >= (prev.revealAge || 6)) {
                 newRevealedState = true;
                 newlyRevealed = true;
               }
             }
 
-            if (newlyRevealed) {
-              setRevealModal({ open: true, plantType: prev.type });
-            }
+            if (newlyRevealed) setRevealModal({ open: true, plantType: prev.type });
 
             return {
-              id: prev.id,
-              slotName: prev.slotName,
-              type: prev.type,
-              potColor: prev.potColor,
-              revealAge: prev.revealAge,
-              ideals: prev.ideals,
-              age: newAge,
-              health: Math.round(newHealth),
-              revealed: newRevealedState,
-              isDead: isDead,
-              conditions: {
-                moisture: Math.round(moisture),
-                sunlight: sunlight,
-                temperature: temperature,
-                soilHealth: Math.round(soilHealth),
-                infestation: Math.round(infestation)
-              }
+              ...prev, age: newAge, health: Math.round(newHealth), revealed: newRevealedState, isDead: isDead,
+              conditions: { moisture: Math.round(moisture), sunlight, temperature, soilHealth: Math.round(soilHealth), infestation: Math.round(infestation) }
             };
           });
         }, 3000);
@@ -425,96 +535,39 @@
         if (!plant || plant.isDead) return;
 
         setPlant(prev => {
-          let c = {
-            moisture: prev.conditions.moisture,
-            sunlight: prev.conditions.sunlight,
-            temperature: prev.conditions.temperature,
-            soilHealth: prev.conditions.soilHealth,
-            infestation: prev.conditions.infestation
-          };
+          let c = { ...prev.conditions };
           let h = prev.health;
 
           switch (action) {
-            case 'water':
-              c.moisture = Math.min(100, c.moisture + 22);
-              if (c.infestation > 0) c.infestation = Math.max(0, c.infestation - 4);
-              showToast('+H2O');
-              break;
-            case 'fertilize':
-              c.soilHealth = Math.min(100, c.soilHealth + 26);
-              showToast('+SOIL');
-              break;
-            case 'sun_up':
-              c.sunlight = Math.min(100, c.sunlight + 15);
-              showToast('+SUN');
-              break;
-            case 'sun_down':
-              c.sunlight = Math.max(0, c.sunlight - 15);
-              showToast('-SUN');
-              break;
-            case 'temp_up':
-              c.temperature = Math.min(105, c.temperature + 4);
-              showToast('+HEAT');
-              break;
-            case 'temp_down':
-              c.temperature = Math.max(40, c.temperature - 4);
-              showToast('-HEAT');
-              break;
-            case 'spray':
-              c.infestation = Math.max(0, c.infestation - 45);
-              c.soilHealth = Math.max(0, c.soilHealth - 6);
-              showToast('PESTS CLR');
-              break;
-            case 'prune':
-              h = Math.min(100, h + 8);
-              showToast('+HP');
-              break;
+            case 'water': c.moisture = Math.min(100, c.moisture + 22); if (c.infestation > 0) c.infestation = Math.max(0, c.infestation - 4); showToast('+H2O'); break;
+            case 'fertilize': c.soilHealth = Math.min(100, c.soilHealth + 26); showToast('+SOIL'); break;
+            case 'sun_up': c.sunlight = Math.min(100, c.sunlight + 15); showToast('+SUN'); break;
+            case 'sun_down': c.sunlight = Math.max(0, c.sunlight - 15); showToast('-SUN'); break;
+            case 'temp_up': c.temperature = Math.min(105, c.temperature + 4); showToast('+HEAT'); break;
+            case 'temp_down': c.temperature = Math.max(40, c.temperature - 4); showToast('-HEAT'); break;
+            case 'spray': c.infestation = Math.max(0, c.infestation - 45); c.soilHealth = Math.max(0, c.soilHealth - 6); showToast('PESTS CLR'); break;
+            case 'prune': h = Math.min(100, h + 8); showToast('+HP'); break;
           }
-
-          return {
-            ...prev,
-            health: h,
-            conditions: c
-          };
+          return { ...prev, health: h, conditions: c };
         });
-      };
-
-      const startNewGamePrompt = (slotIdx) => {
-        setNameModal({ open: true, slotIndex: slotIdx, currentName: ('SLOT ' + (slotIdx + 1)), isNew: true });
-      };
-
-      const editSlotNamePrompt = (slotIdx) => {
-        const current = (slotsData[slotIdx] && slotsData[slotIdx].slotName) ? slotsData[slotIdx].slotName : ('SLOT ' + (slotIdx + 1));
-        setNameModal({ open: true, slotIndex: slotIdx, currentName: current, isNew: false });
       };
 
       const handleSaveName = (enteredName) => {
         const finalName = enteredName.trim().toUpperCase() || ('SLOT ' + (nameModal.slotIndex + 1));
         if (nameModal.isNew) {
           const fresh = generateNewPlant(nameModal.slotIndex, finalName);
-          setPlant(fresh);
-          setActiveSlot(nameModal.slotIndex);
-          try {
-            localStorage.setItem('plant_slot_' + nameModal.slotIndex, JSON.stringify(fresh));
-          } catch (e) {}
-          setSlotsData(prev => {
-            const next = [prev[0], prev[1], prev[2]];
-            next[nameModal.slotIndex] = fresh;
-            return next;
-          });
+          setPlant(fresh); setActiveSlot(nameModal.slotIndex);
+          try { localStorage.setItem('plant_slot_' + nameModal.slotIndex, JSON.stringify(fresh)); } catch (e) {}
+          setSlotsData(prev => { const next = [...prev]; next[nameModal.slotIndex] = fresh; return next; });
           setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false });
           setScreen('game');
         } else {
-          if (plant && activeSlot === nameModal.slotIndex) {
-            setPlant(prev => ({ ...prev, slotName: finalName }));
-          }
+          if (plant && activeSlot === nameModal.slotIndex) setPlant(prev => ({ ...prev, slotName: finalName }));
           setSlotsData(prev => {
-            const next = [prev[0], prev[1], prev[2]];
+            const next = [...prev];
             if (next[nameModal.slotIndex]) {
               next[nameModal.slotIndex] = { ...next[nameModal.slotIndex], slotName: finalName };
-              try {
-                localStorage.setItem('plant_slot_' + nameModal.slotIndex, JSON.stringify(next[nameModal.slotIndex]));
-              } catch (e) {}
+              try { localStorage.setItem('plant_slot_' + nameModal.slotIndex, JSON.stringify(next[nameModal.slotIndex])); } catch (e) {}
             }
             return next;
           });
@@ -522,25 +575,31 @@
         }
       };
 
-      const deleteSlot = (slotIdx, e) => {
-        e.stopPropagation();
-        if (confirm('ERASE SLOT ' + (slotIdx + 1) + '?')) {
-          try {
-            localStorage.removeItem('plant_slot_' + slotIdx);
-          } catch (err) {}
+      const retirePlant = () => {
+        if (sunroomData.length >= 9) {
+          showToast("SUNROOM FULL!");
+          return;
+        }
+        if (confirm(`RETIRE ${(plant.slotName || 'PLANT')} TO SUNROOM?`)) {
+          setSunroomData(prev => [...prev, plant]);
+          try { localStorage.removeItem('plant_slot_' + activeSlot); } catch (err) {}
           setSlotsData(prev => {
-            const next = [prev[0], prev[1], prev[2]];
-            next[slotIdx] = null;
+            const next = [...prev];
+            next[activeSlot] = null;
             return next;
           });
-          if (activeSlot === slotIdx) setPlant(null);
+          setPlant(null);
+          setScreen('sunroom');
         }
       };
 
-      const selectSlotToPlay = (slotIdx) => {
-        setActiveSlot(slotIdx);
-        setPlant(slotsData[slotIdx]);
-        setScreen('game');
+      const deleteSlot = (slotIdx, e) => {
+        e.stopPropagation();
+        if (confirm('ERASE SLOT ' + (slotIdx + 1) + '?')) {
+          try { localStorage.removeItem('plant_slot_' + slotIdx); } catch (err) {}
+          setSlotsData(prev => { const next = [...prev]; next[slotIdx] = null; return next; });
+          if (activeSlot === slotIdx) setPlant(null);
+        }
       };
 
       const getBarColor = (val, min, max, isPest) => {
@@ -555,25 +614,8 @@
         return 'bg-retro-red';
       };
 
-      const getVisualPlantColors = () => {
-        if (!plant) return { body: '#16a34a', leaf: '#22c55e', stroke: '#000' };
-        if (plant.isDead) return { body: '#64748b', leaf: '#475569', stroke: '#000' };
-        if (plant.health < 35 && plant.conditions.moisture < plant.ideals.moisture[0]) {
-          return { body: '#d97706', leaf: '#f59e0b', stroke: '#000' };
-        }
-        if (plant.health < 35 && plant.conditions.moisture > plant.ideals.moisture[1]) {
-          return { body: '#064e3b', leaf: '#047857', stroke: '#000' };
-        }
-        const arch = getArch(plant.type);
-        return { body: arch.color, leaf: arch.leafColor, stroke: '#000' };
-      };
-
-      const colors = getVisualPlantColors();
-      const growthProgress = plant ? Math.min(plant.age / 18, 1) : 0.5;
-      const plantHeight = 24 + growthProgress * 70;
-      const soilBaseY = 168;
-      const stemTopY = soilBaseY - plantHeight;
       const isBlooming = plant && !plant.isDead && plant.age >= 6 && plant.health >= 55;
+      const canRetire = plant && !plant.isDead && plant.age >= 20 && plant.revealed;
 
       return (
         <div className="h-full w-full max-w-md mx-auto flex flex-col justify-between overflow-hidden p-3 box-border">
@@ -584,17 +626,10 @@
               <div className="flex justify-between items-center px-1 py-1">
                 <span className="text-[10px] text-emerald-700 dark:text-retro-neonGreen font-bold">POCKET GARDEN</span>
                 <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setTutorialOpen(true)}
-                    className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1 text-[8px] hover:text-black dark:hover:text-white"
-                  >
+                  <button onClick={() => setTutorialOpen(true)} className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1 text-[8px] hover:text-black dark:hover:text-white font-bold">
                     ? GUIDE
                   </button>
-                  <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="retro-btn bg-white dark:bg-black text-slate-800 dark:text-white p-1 text-[8px] flex items-center justify-center"
-                    title="Toggle Theme"
-                  >
+                  <button onClick={() => setDarkMode(!darkMode)} className="retro-btn bg-white dark:bg-black text-slate-800 dark:text-white p-1 text-[8px] flex items-center justify-center">
                     {darkMode ? <SunIcon /> : <MoonIcon />}
                   </button>
                 </div>
@@ -605,14 +640,14 @@
                   <DropletIcon />
                 </div>
                 <h1 className="text-xl leading-relaxed text-emerald-800 dark:text-retro-neonGreen drop-shadow-xs dark:drop-shadow-[2px_2px_0px_#000]">
-                  TINY PLANT<br/>SIM 1.0
+                  TINY PLANT<br/>SIM 1.2
                 </h1>
                 <p className="text-[8px] text-slate-600 dark:text-retro-border mt-3 max-w-[240px] leading-loose">
                   10 PROCEDURAL FLORA.<br/>SELECT A SAVE FILE.
                 </p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-4">
                 {[0, 1, 2].map((idx) => {
                   const data = slotsData[idx];
                   return (
@@ -620,14 +655,14 @@
                       {data ? (
                         <div className="flex-1 min-w-0 pr-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate">
+                            <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate font-bold">
                               {data.slotName || ('SLOT ' + (idx + 1))}
                             </span>
-                            <button onClick={() => editSlotNamePrompt(idx)} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
+                            <button onClick={() => setNameModal({ open: true, slotIndex: idx, currentName: data.slotName || '', isNew: false })} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
                           </div>
                           <div className="flex flex-col gap-1 mt-2 text-[8px] text-slate-500 dark:text-retro-border">
                             <span>{data.isDead ? 'WITHERED' : data.revealed ? getArch(data.type).name : 'MYSTERY SEED'}</span>
-                            <span>DAY {Math.floor(data.age)} • <span className={data.isDead ? 'text-retro-red' : 'text-emerald-600 dark:text-retro-neonGreen font-bold'}>{data.isDead ? 'DEAD' : (data.health + '% HP')}</span></span>
+                            <span>DAY {Math.floor(data.age || 1)} • <span className={data.isDead ? 'text-retro-red font-bold' : 'text-emerald-600 dark:text-retro-neonGreen font-bold'}>{data.isDead ? 'DEAD' : ((data.health || 0) + '% HP')}</span></span>
                           </div>
                         </div>
                       ) : (
@@ -639,7 +674,7 @@
                       <div className="flex items-center gap-2 shrink-0">
                         {data ? (
                           <>
-                            <button onClick={() => selectSlotToPlay(idx)} className="retro-btn bg-emerald-500 dark:bg-retro-neonGreen text-black px-2 py-2 text-[8px] font-bold">
+                            <button onClick={() => { setActiveSlot(idx); setPlant(data); setScreen('game'); }} className="retro-btn bg-emerald-500 dark:bg-retro-neonGreen text-black px-2 py-2 text-[8px] font-bold">
                               PLAY
                             </button>
                             <button onClick={(e) => deleteSlot(idx, e)} className="retro-btn bg-retro-red text-white p-2">
@@ -647,7 +682,7 @@
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => startNewGamePrompt(idx)} className="retro-btn bg-slate-100 dark:bg-retro-panel text-slate-800 dark:text-white px-2 py-2 text-[8px]">
+                          <button onClick={() => setNameModal({ open: true, slotIndex: idx, currentName: ('SLOT ' + (idx + 1)), isNew: true })} className="retro-btn bg-slate-100 dark:bg-retro-panel text-slate-800 dark:text-white px-2 py-2 text-[8px] font-bold">
                             NEW
                           </button>
                         )}
@@ -656,6 +691,10 @@
                   );
                 })}
               </div>
+
+              <button onClick={() => setScreen('sunroom')} className="retro-btn w-full bg-purple-600 dark:bg-purple-700 text-white py-3 text-[10px] mb-2 font-bold flex justify-center items-center gap-2">
+                <SunIcon /> VISIT SUNROOM ({sunroomData.length}/9)
+              </button>
 
               <footer className="text-center text-[8px] text-slate-500 dark:text-retro-border">
                 © 2026 RETRO STUDIOS
@@ -667,38 +706,28 @@
           {screen === 'game' && plant && (
             <div className="h-full flex flex-col justify-between overflow-hidden">
               
-              {/* TOP SECTION: Header & Stats */}
               <div className="shrink-0 space-y-2 pb-1">
                 <div className="flex items-center justify-between py-1 border-b-4 border-slate-300 dark:border-retro-panel">
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => setScreen('home')} className="retro-btn bg-white dark:bg-retro-panel text-slate-900 dark:text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
+                    <button onClick={() => setScreen('home')} className="retro-btn bg-white dark:bg-retro-panel text-slate-900 dark:text-white px-2 py-1.5 text-[8px] flex items-center gap-1 font-bold">
                       <ArrowLeftIcon /> BACK
-                    </button>
-                    <button
-                      onClick={() => setTutorialOpen(true)}
-                      className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1.5 text-[8px]"
-                      title="Guide"
-                    >
-                      ?
                     </button>
                   </div>
 
                   <div className="flex items-center gap-2 max-w-[120px] truncate">
-                    <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate">{plant.slotName}</span>
-                    <button onClick={() => editSlotNamePrompt(activeSlot)} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
+                    <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate font-bold">{plant.slotName}</span>
+                    <button onClick={() => setNameModal({ open: true, slotIndex: activeSlot, currentName: plant.slotName, isNew: false })} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {canRetire && (
+                      <button onClick={retirePlant} className="retro-btn bg-amber-500 dark:bg-retro-yellow text-black px-1.5 py-1 text-[8px] font-bold animate-pulse">
+                        RETIRE
+                      </button>
+                    )}
                     <span className={'text-[10px] px-2 py-1 border-2 border-current bg-white dark:bg-black font-bold ' + (plant.isDead ? 'text-retro-red' : plant.health > 70 ? 'text-emerald-600 dark:text-retro-neonGreen' : plant.health > 35 ? 'text-amber-500 dark:text-retro-yellow' : 'text-retro-red')}>
                       {plant.isDead ? 'DEAD' : ('HP:' + plant.health)}
                     </span>
-                    <button
-                      onClick={() => setDarkMode(!darkMode)}
-                      className="retro-btn bg-white dark:bg-black text-slate-800 dark:text-white p-1 text-[8px] flex items-center justify-center"
-                      title="Toggle Theme"
-                    >
-                      {darkMode ? <SunIcon /> : <MoonIcon />}
-                    </button>
                   </div>
                 </div>
 
@@ -712,288 +741,40 @@
                 </div>
               </div>
 
-              {/* MIDDLE SECTION: Visual Card & Meters */}
               <div className="flex-1 min-h-0 grid grid-cols-12 gap-3 my-2 items-stretch retro-panel p-2">
-                
-                {/* SVG Visual Window */}
                 <div className="col-span-7 h-full flex flex-col items-center justify-center relative bg-slate-100 dark:bg-black border-4 border-slate-700 dark:border-retro-border overflow-hidden">
-                  <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
-                    
-                    {/* Infestation bugs twitching */}
-                    {plant.conditions.infestation > 10 && (
-                      <g fill="#ff003c" className="bug-idle-anim">
-                        <rect x="85" y={soilBaseY - 30} width="4" height="4" />
-                        <rect x="115" y={soilBaseY - 45} width="4" height="4" />
-                        <rect x="102" y={soilBaseY - 60} width="4" height="4" />
-                        <rect x="75" y={soilBaseY - 15} width="4" height="4" />
-                      </g>
-                    )}
-
-                    {/* ANIMATED PLANT LAYER (Leaves & Stems) */}
-                    <g className={plant.isDead ? '' : 'plant-idle-anim'}>
-                      {plant.isDead ? (
-                        <g stroke="#64748b" strokeWidth="6" fill="none">
-                          <polyline points="100,170 102,140 120,135 135,132 135,155" />
-                          <polyline points="112,140 125,150 120,162" />
-                        </g>
-                      ) : !plant.revealed ? (
-                        <g strokeWidth="4">
-                          <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={colors.body} />
-                          <polyline points={'100,' + stemTopY + ' 85,' + (stemTopY - 5) + ' 78,' + stemTopY} stroke={colors.leaf} fill="none"/>
-                          <polyline points={'100,' + stemTopY + ' 115,' + (stemTopY - 5) + ' 122,' + stemTopY} stroke={colors.leaf} fill="none"/>
-                        </g>
-                      ) : plant.type === 'cactus' ? (
-                        /* 1. DESERT CACTUS */
-                        <g>
-                          <rect x="88" y={stemTopY} width="24" height={plantHeight} fill={colors.body} stroke={colors.stroke} strokeWidth="4" />
-                          <line x1="84" y1={stemTopY + 20} x2="116" y2={stemTopY + 20} stroke="#ffea00" strokeWidth="2" />
-                          <line x1="84" y1={stemTopY + 45} x2="116" y2={stemTopY + 45} stroke="#ffea00" strokeWidth="2" />
-                          {plant.age >= 10 && (
-                            <polyline points={'88,' + (stemTopY + 35) + ' 75,' + (stemTopY + 35) + ' 75,' + (stemTopY + 15) + ' 82,' + (stemTopY + 15)} stroke={colors.body} strokeWidth="8" fill="none" />
-                          )}
-                          {plant.age >= 13 && (
-                            <polyline points={'112,' + (stemTopY + 48) + ' 125,' + (stemTopY + 48) + ' 125,' + (stemTopY + 28) + ' 118,' + (stemTopY + 28)} stroke={colors.body} strokeWidth="8" fill="none" />
-                          )}
-                          {isBlooming && (
-                            <rect x="94" y={stemTopY - 12} width="12" height="12" fill="#ff003c" className="flower-anim" />
-                          )}
-                        </g>
-                      ) : plant.type === 'succulent' ? (
-                        /* 2. FLESHY SUCCULENT */
-                        <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="2">
-                          <rect x="66" y={soilBaseY - 20} width="68" height="20" />
-                          <rect x="76" y={soilBaseY - 30} width="48" height="18" />
-                          <rect x="86" y={soilBaseY - 40} width="28" height="16" fill={colors.body} />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <polyline points={'100,' + (soilBaseY - 30) + ' 118,' + (soilBaseY - 60) + ' 122,' + (soilBaseY - 80)} stroke="#16a34a" strokeWidth="4" fill="none" />
-                              <rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'fern' ? (
-                        /* 3. CANOPY FERN */
-                        <g stroke={colors.body} fill="none" strokeWidth="4">
-                          <line x1="100" y1={soilBaseY} x2="98" y2={stemTopY} />
-                          {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
-                            const yPos = soilBaseY - plantHeight * frac;
-                            const spread = 20 + frac * 16;
-                            return (
-                              <g key={idx}>
-                                <polyline points={'100,' + yPos + ' ' + (100 - spread) + ',' + (yPos - 10) + ' ' + (100 - spread - 4) + ',' + (yPos + 4)} stroke={colors.leaf} />
-                                <polyline points={'100,' + yPos + ' ' + (100 + spread) + ',' + (yPos - 10) + ' ' + (100 + spread + 4) + ',' + (yPos + 4)} stroke={colors.leaf} />
-                              </g>
-                            );
-                          })}
-                          {isBlooming && (
-                            <g fill="#0284c7" stroke="none" className="flower-anim">
-                              <rect x="68" y={stemTopY + 16} width="6" height="6" />
-                              <rect x="126" y={stemTopY + 20} width="6" height="6" />
-                              <rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'bonsai' ? (
-                        /* 5. PINE BONSAI */
-                        <g>
-                          <polyline points={'100,' + soilBaseY + ' 94,' + (soilBaseY - 20) + ' 114,' + (soilBaseY - 42) + ' 98,' + stemTopY} stroke={colors.body} strokeWidth="10" strokeLinecap="square" fill="none" />
-                          <line x1="110" y1={soilBaseY - 32} x2="132" y2={soilBaseY - 38} stroke={colors.body} strokeWidth="6" />
-                          <line x1="96" y1={soilBaseY - 45} x2="72" y2={soilBaseY - 50} stroke={colors.body} strokeWidth="6" />
-                          <rect x="60" y={soilBaseY - 58} width="36" height="12" fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <rect x="116" y={soilBaseY - 46} width="32" height="12" fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <rect x="80" y={stemTopY - 8} width="42" height="14" fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <rect x="76" y={soilBaseY - 64} width="6" height="6" fill="#f472b6" />
-                              <rect x="126" y={soilBaseY - 52} width="6" height="6" fill="#f472b6" />
-                              <rect x="98" y={stemTopY - 14} width="8" height="8" fill="#f472b6" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'flytrap' ? (
-                        /* 6. SNAP TRAP (VENUS FLYTRAP) */
-                        <g>
-                          <polyline points={'100,' + soilBaseY + ' 82,' + (stemTopY + 24) + ' 66,' + stemTopY} stroke={colors.leaf} strokeWidth="4" fill="none" />
-                          <polyline points={'100,' + soilBaseY + ' 118,' + (stemTopY + 24) + ' 134,' + stemTopY} stroke={colors.leaf} strokeWidth="4" fill="none" />
-                          <polyline points={'100,' + soilBaseY + ' 100,' + (stemTopY + 12)} stroke={colors.leaf} strokeWidth="4" fill="none" />
-                          {/* Left Jaws */}
-                          <rect x="52" y={stemTopY - 12} width="24" height="16" fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <polyline points={'52,' + (stemTopY - 12) + ' 56,' + (stemTopY - 18) + ' 60,' + (stemTopY - 12) + ' 64,' + (stemTopY - 18) + ' 68,' + (stemTopY - 12) + ' 72,' + (stemTopY - 18) + ' 76,' + (stemTopY - 12)} stroke="#fff" strokeWidth="2" fill="none" />
-                          {/* Right Jaws */}
-                          <rect x="124" y={stemTopY - 12} width="24" height="16" fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <polyline points={'124,' + (stemTopY - 12) + ' 128,' + (stemTopY - 18) + ' 132,' + (stemTopY - 12) + ' 136,' + (stemTopY - 18) + ' 140,' + (stemTopY - 12) + ' 144,' + (stemTopY - 18) + ' 148,' + (stemTopY - 12)} stroke="#fff" strokeWidth="2" fill="none" />
-                          {/* Center Jaws */}
-                          <rect x="88" y={stemTopY} width="24" height="14" fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <polyline points={'88,' + stemTopY + ' 92,' + (stemTopY - 6) + ' 96,' + stemTopY + ' 100,' + (stemTopY - 6) + ' 104,' + stemTopY + ' 108,' + (stemTopY - 6) + ' 112,' + stemTopY} stroke="#fff" strokeWidth="2" fill="none" />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <line x1="100" y1={soilBaseY - 20} x2="100" y2={stemTopY - 24} stroke="#16a34a" strokeWidth="2" />
-                              <rect x="96" y={stemTopY - 30} width="8" height="8" fill="#ffffff" />
-                              <rect x="98" y={stemTopY - 28} width="4" height="4" fill="#facc15" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'orchid' ? (
-                        /* 7. MOTH ORCHID */
-                        <g>
-                          <polygon points={'100,' + soilBaseY + ' 60,' + (soilBaseY - 8) + ' 68,' + (soilBaseY - 18) + ' 100,' + (soilBaseY - 10)} fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <polygon points={'100,' + soilBaseY + ' 140,' + (soilBaseY - 8) + ' 132,' + (soilBaseY - 18) + ' 100,' + (soilBaseY - 10)} fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <polyline points={'100,' + soilBaseY + ' 96,' + (soilBaseY - 35) + ' 106,' + (soilBaseY - 70) + ' 122,' + stemTopY} stroke={colors.leaf} strokeWidth="3" fill="none" />
-                          <rect x="114" y={stemTopY - 6} width="16" height="16" fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <rect x="119" y={stemTopY - 1} width="6" height="6" fill="#fef08a" />
-                          {plant.age >= 9 && (
-                            <g>
-                              <rect x="98" y={soilBaseY - 55} width="14" height="14" fill={colors.body} stroke="#000" strokeWidth="2" />
-                              <rect x="103" y={soilBaseY - 51} width="4" height="4" fill="#fef08a" />
-                            </g>
-                          )}
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <rect x="126" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" />
-                              <rect x="110" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'snake' ? (
-                        /* 8. VIPER BLADE (SNAKE PLANT) */
-                        <g>
-                          <polygon points={'100,' + soilBaseY + ' 88,' + (stemTopY + 10) + ' 98,' + (stemTopY - 15) + ' 106,' + (stemTopY + 15)} fill={colors.leaf} stroke={colors.body} strokeWidth="4" />
-                          <polygon points={'90,' + soilBaseY + ' 74,' + (stemTopY + 30) + ' 82,' + (stemTopY + 10) + ' 92,' + (stemTopY + 30)} fill={colors.leaf} stroke={colors.body} strokeWidth="3" />
-                          <polygon points={'110,' + soilBaseY + ' 124,' + (stemTopY + 35) + ' 118,' + (stemTopY + 15) + ' 108,' + (stemTopY + 35)} fill={colors.leaf} stroke={colors.body} strokeWidth="3" />
-                          <line x1="94" y1={stemTopY + 15} x2="102" y2={stemTopY + 15} stroke={colors.body} strokeWidth="2" />
-                          <line x1="92" y1={stemTopY + 35} x2="104" y2={stemTopY + 35} stroke={colors.body} strokeWidth="2" />
-                          <line x1="90" y1={stemTopY + 55} x2="106" y2={stemTopY + 55} stroke={colors.body} strokeWidth="2" />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <rect x="96" y={stemTopY - 24} width="8" height="8" fill="#fef08a" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'bamboo' ? (
-                        /* 9. LUCKY BAMBOO */
-                        <g>
-                          <rect x="92" y={stemTopY} width="8" height={plantHeight} fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <line x1="90" y1={stemTopY + 25} x2="102" y2={stemTopY + 25} stroke="#1e293b" strokeWidth="2" />
-                          <line x1="90" y1={stemTopY + 50} x2="102" y2={stemTopY + 50} stroke="#1e293b" strokeWidth="2" />
-                          <line x1="90" y1={stemTopY + 75} x2="102" y2={stemTopY + 75} stroke="#1e293b" strokeWidth="2" />
-                          <rect x="104" y={stemTopY + 20} width="7" height={plantHeight - 20} fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <line x1="102" y1={stemTopY + 45} x2="113" y2={stemTopY + 45} stroke="#1e293b" strokeWidth="2" />
-                          <line x1="102" y1={stemTopY + 70} x2="113" y2={stemTopY + 70} stroke="#1e293b" strokeWidth="2" />
-                          <polyline points={'92,' + (stemTopY + 5) + ' 74,' + (stemTopY - 10) + ' 70,' + stemTopY} stroke={colors.leaf} strokeWidth="3" fill="none" />
-                          <polyline points={'100,' + (stemTopY + 5) + ' 115,' + (stemTopY - 12) + ' 120,' + stemTopY} stroke={colors.leaf} strokeWidth="3" fill="none" />
-                          <polyline points={'108,' + (stemTopY + 25) + ' 126,' + (stemTopY + 12) + ' 130,' + (stemTopY + 20)} stroke={colors.leaf} strokeWidth="3" fill="none" />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <rect x="88" y={stemTopY + 34} width="26" height="6" fill="#ef4444" />
-                              <polygon points={'101,' + (stemTopY + 40) + ' 95,' + (stemTopY + 50) + ' 107,' + (stemTopY + 50)} fill="#ef4444" />
-                            </g>
-                          )}
-                        </g>
-                      ) : plant.type === 'sunflower' ? (
-                        /* 10. MINI SUNFLOWER */
-                        <g>
-                          <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={colors.leaf} strokeWidth="5" />
-                          <polygon points={'100,' + (soilBaseY - plantHeight * 0.4) + ' 72,' + (soilBaseY - plantHeight * 0.45) + ' 78,' + (soilBaseY - plantHeight * 0.32)} fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <polygon points={'100,' + (soilBaseY - plantHeight * 0.6) + ' 128,' + (soilBaseY - plantHeight * 0.65) + ' 122,' + (soilBaseY - plantHeight * 0.52)} fill={colors.leaf} stroke="#000" strokeWidth="2" />
-                          <rect x="88" y={stemTopY - 12} width="24" height="24" fill={colors.body} stroke="#000" strokeWidth="2" />
-                          <rect x="94" y={stemTopY - 18} width="12" height="6" fill="#facc15" />
-                          <rect x="94" y={stemTopY + 12} width="12" height="6" fill="#facc15" />
-                          <rect x="82" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
-                          <rect x="112" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
-                          <rect x="94" y={stemTopY - 6} width="12" height="12" fill="#451a03" />
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <rect x="84" y={stemTopY - 16} width="6" height="6" fill="#facc15" />
-                              <rect x="110" y={stemTopY - 16} width="6" height="6" fill="#facc15" />
-                              <rect x="84" y={stemTopY + 10} width="6" height="6" fill="#facc15" />
-                              <rect x="110" y={stemTopY + 10} width="6" height="6" fill="#facc15" />
-                            </g>
-                          )}
-                        </g>
-                      ) : (
-                        /* 4. BROADLEAF AROID (DEFAULT) */
-                        <g>
-                          <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="2">
-                            <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={colors.body} strokeWidth="4" />
-                            <polygon points={'100,' + (soilBaseY - plantHeight * 0.4) + ' 70,' + (soilBaseY - plantHeight * 0.5) + ' 62,' + (soilBaseY - plantHeight * 0.35) + ' 80,' + (soilBaseY - plantHeight * 0.28)} />
-                            <polygon points={'100,' + (soilBaseY - plantHeight * 0.65) + ' 130,' + (soilBaseY - plantHeight * 0.75) + ' 138,' + (soilBaseY - plantHeight * 0.6) + ' 120,' + (soilBaseY - plantHeight * 0.52)} />
-                            <polygon points={'100,' + stemTopY + ' 85,' + (stemTopY - 20) + ' 100,' + (stemTopY - 25) + ' 115,' + (stemTopY - 20)} />
-                          </g>
-                          {isBlooming && (
-                            <g className="flower-anim">
-                              <polyline points={'98,' + (soilBaseY - 15) + ' 84,' + (soilBaseY - 50) + ' 80,' + (soilBaseY - 75)} stroke="#16a34a" strokeWidth="4" fill="none" />
-                              <rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" />
-                              <rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" />
-                            </g>
-                          )}
-                        </g>
-                      )}
-                    </g>
-
-                    {/* Pot & Soil */}
-                    <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
-                    <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor} stroke="#000" strokeWidth="2" />
-                  </svg>
+                  <PlantVisual plant={plant} isBlooming={isBlooming} />
                 </div>
 
-                {/* Status Condition Bars */}
                 <div className="col-span-5 flex flex-col justify-between py-1 px-1">
-                  <div>
-                    <div className="flex justify-between items-center text-[8px] mb-1">
-                      <span className="flex items-center gap-1"><DropletIcon /> H2O</span>
-                      <span>{plant.conditions.moisture}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
-                      <div className={'h-full ' + getBarColor(plant.conditions.moisture, plant.ideals.moisture[0], plant.ideals.moisture[1], false)} style={{ width: plant.conditions.moisture + '%' }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center text-[8px] mb-1">
-                      <span className="flex items-center gap-1"><SunIcon /> SUN</span>
-                      <span>{plant.conditions.sunlight}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
-                      <div className={'h-full ' + getBarColor(plant.conditions.sunlight, plant.ideals.sunlight[0], plant.ideals.sunlight[1], false)} style={{ width: plant.conditions.sunlight + '%' }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center text-[8px] mb-1">
-                      <span className="flex items-center gap-1"><ThermometerIcon /> TMP</span>
-                      <span>{plant.conditions.temperature}°</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
-                      <div className={'h-full ' + getBarColor(plant.conditions.temperature, plant.ideals.temp[0], plant.ideals.temp[1], false)} style={{ width: Math.min(100, Math.max(0, (plant.conditions.temperature - 40) * 1.5)) + '%' }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center text-[8px] mb-1">
-                      <span className="flex items-center gap-1"><ShovelIcon /> DIRT</span>
-                      <span>{plant.conditions.soilHealth}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
-                      <div className={'h-full ' + getBarColor(plant.conditions.soilHealth, plant.ideals.soil[0], 100, false)} style={{ width: plant.conditions.soilHealth + '%' }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center text-[8px] mb-1">
-                      <span className="flex items-center gap-1"><BugIcon /> BUG</span>
-                      <span>{plant.conditions.infestation}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
-                      <div className={'h-full ' + getBarColor(plant.conditions.infestation, 0, 15, true)} style={{ width: plant.conditions.infestation + '%' }} />
-                    </div>
-                  </div>
+                  {['moisture', 'sunlight', 'temperature', 'soilHealth', 'infestation'].map((cond, i) => {
+                    const labels = ['H2O', 'SUN', 'TMP', 'DIRT', 'BUG'];
+                    const icons = [<DropletIcon key={1}/>, <SunIcon key={2}/>, <ThermometerIcon key={3}/>, <ShovelIcon key={4}/>, <BugIcon key={5}/>];
+                    
+                    const c = plant.conditions || {};
+                    const idls = plant.ideals || { moisture: [0, 100], sunlight: [0, 100], temp: [0, 100], soil: [0, 100] };
+                    const val = c[cond] ?? (cond === 'infestation' ? 0 : 50);
+                    
+                    const lookup = cond === 'temperature' ? 'temp' : cond === 'soilHealth' ? 'soil' : cond;
+                    const range = cond === 'infestation' ? [0, 15] : (idls[lookup] || [0, 100]);
+                    const barW = cond === 'temperature' ? Math.min(100, Math.max(0, (val - 40) * 1.5)) : val;
+                    
+                    return (
+                      <div key={cond}>
+                        <div className="flex justify-between items-center text-[8px] mb-1">
+                          <span className="flex items-center gap-1 font-bold">{icons[i]} {labels[i]}</span>
+                          <span className="font-bold">{val}{cond === 'temperature' ? '°' : '%'}</span>
+                        </div>
+                        <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
+                          <div className={'h-full ' + getBarColor(val, range[0], range[1] || 100, cond === 'infestation')} style={{ width: `${barW}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* BOTTOM SECTION: Buttons & Controls */}
               <div className="shrink-0 space-y-2 pb-1">
-                
-                {/* Toast Notification */}
                 <div className="h-6 flex items-center justify-center">
                   {toast && (
                     <span className="text-[8px] text-black bg-emerald-400 dark:bg-retro-neonGreen px-2 py-1 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] font-bold">
@@ -1002,38 +783,31 @@
                   )}
                 </div>
 
-                {/* Main Actions */}
                 <div className="grid grid-cols-4 gap-2">
                   <button onClick={() => applyCare('water')} disabled={plant.isDead} className="retro-btn bg-blue-600 text-white py-2 flex flex-col items-center">
-                    <DropletIcon />
-                    <span className="text-[7px] mt-2">WATER</span>
+                    <DropletIcon /><span className="text-[7px] mt-2 font-bold">WATER</span>
                   </button>
                   <button onClick={() => applyCare('fertilize')} disabled={plant.isDead} className="retro-btn bg-amber-600 text-white py-2 flex flex-col items-center">
-                    <ShovelIcon />
-                    <span className="text-[7px] mt-2">FEED</span>
+                    <ShovelIcon /><span className="text-[7px] mt-2 font-bold">FEED</span>
                   </button>
                   <button onClick={() => applyCare('spray')} disabled={plant.isDead} className="retro-btn bg-rose-600 text-white py-2 flex flex-col items-center">
-                    <SprayIcon />
-                    <span className="text-[7px] mt-2">SPRAY</span>
+                    <SprayIcon /><span className="text-[7px] mt-2 font-bold">SPRAY</span>
                   </button>
                   <button onClick={() => applyCare('prune')} disabled={plant.isDead} className="retro-btn bg-emerald-600 text-white py-2 flex flex-col items-center">
-                    <ScissorsIcon />
-                    <span className="text-[7px] mt-2">PRUNE</span>
+                    <ScissorsIcon /><span className="text-[7px] mt-2 font-bold">PRUNE</span>
                   </button>
                 </div>
 
-                {/* Environmental Controls */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="retro-panel p-2 flex items-center justify-between">
-                    <span className="text-[8px] flex items-center gap-1"><SunIcon /> SUN</span>
+                    <span className="text-[8px] flex items-center gap-1 font-bold"><SunIcon /> SUN</span>
                     <div className="flex gap-2">
                       <button onClick={() => applyCare('sun_down')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">-</button>
                       <button onClick={() => applyCare('sun_up')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">+</button>
                     </div>
                   </div>
-
                   <div className="retro-panel p-2 flex items-center justify-between">
-                    <span className="text-[8px] flex items-center gap-1"><ThermometerIcon /> TMP</span>
+                    <span className="text-[8px] flex items-center gap-1 font-bold"><ThermometerIcon /> TMP</span>
                     <div className="flex gap-2">
                       <button onClick={() => applyCare('temp_down')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">-</button>
                       <button onClick={() => applyCare('temp_up')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">+</button>
@@ -1041,11 +815,44 @@
                   </div>
                 </div>
               </div>
-
             </div>
           )}
 
-          {/* ======================= MODAL: TUTORIAL / HOW TO PLAY ======================= */}
+          {/* ======================= SCREEN 3: SUNROOM ======================= */}
+          {screen === 'sunroom' && (
+            <div className="h-full flex flex-col justify-between py-2 greenhouse-grid relative">
+              <div className="flex items-center justify-between py-1 px-2 border-b-4 border-slate-300 dark:border-retro-panel bg-slate-200/90 dark:bg-black/80 backdrop-blur-sm z-10">
+                <button onClick={() => setScreen('home')} className="retro-btn bg-white dark:bg-retro-panel text-slate-900 dark:text-white px-2 py-1.5 text-[8px] flex items-center gap-1 font-bold">
+                  <ArrowLeftIcon /> BACK
+                </button>
+                <span className="text-[10px] text-amber-600 dark:text-retro-yellow font-bold">THE SUNROOM</span>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-2 pt-4">
+                <div className="grid grid-cols-3 gap-2">
+                  {sunroomData.map((sp, i) => (
+                    <div key={i} className="retro-panel bg-slate-100 dark:bg-black flex flex-col items-center justify-between p-1 h-32 border-2 border-purple-500">
+                      <div className="w-full h-16 flex items-center justify-center relative overflow-hidden">
+                        <PlantVisual plant={sp} isBlooming={true} scale={0.45} soilBaseY={190} />
+                      </div>
+                      <div className="text-center w-full bg-slate-200 dark:bg-[#1f2937] p-1 border-t-2 border-purple-500">
+                        <div className="text-[6px] text-blue-700 dark:text-retro-blue truncate mb-1 font-bold">{sp.slotName || 'PLANT'}</div>
+                        <div className="text-[6px] text-slate-600 dark:text-retro-border truncate font-bold">{getArch(sp.type).name}</div>
+                        <div className="text-[6px] text-emerald-600 dark:text-retro-neonGreen mt-1 font-bold">DAY {Math.floor(sp.age || 1)}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {Array.from({ length: Math.max(0, 9 - sunroomData.length) }).map((_, i) => (
+                    <div key={`empty-${i}`} className="retro-panel bg-slate-100/50 dark:bg-black/40 flex items-center justify-center h-32 border-2 border-slate-400 dark:border-retro-panel border-dashed">
+                      <span className="text-[6px] text-slate-400 dark:text-retro-panel font-bold">EMPTY</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================= MODAL: TUTORIAL ======================= */}
           {tutorialOpen && (
             <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
               <div className="w-full max-w-xs retro-panel border-amber-500 dark:border-retro-yellow p-4 flex flex-col max-h-[90vh]">
@@ -1058,7 +865,6 @@
                     <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">1. STATUS METERS:</span>
                     <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p>
                   </div>
-
                   <div>
                     <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">2. CARE ACTIONS:</span>
                     <p className="text-slate-600 dark:text-retro-border mt-0.5"><span className="text-black dark:text-white font-bold">WATER:</span> +Moisture</p>
@@ -1066,27 +872,21 @@
                     <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">SPRAY:</span> Clears bug swarms</p>
                     <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">PRUNE:</span> Trims leaves for +HP</p>
                   </div>
-
                   <div>
                     <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">3. CLIMATE DIALS:</span>
                     <p className="text-slate-600 dark:text-retro-border mt-0.5">Use <span className="text-black dark:text-white font-bold">SUN (+/-)</span> and <span className="text-black dark:text-white font-bold">TMP (+/-)</span> buttons to balance the room environment.</p>
                   </div>
-
                   <div>
-                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">4. 10 SPECIES TO DISCOVER:</span>
-                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Every plant begins as an unknown seedling. Once mature, its true species and exact ideal climate are revealed!</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">4. MYSTERY SEEDS:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p>
                   </div>
-
                   <div>
-                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">5. HEALTH & BLOOM:</span>
-                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep HP high. Healthy plants sprout species-specific retro blooms as they grow!</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">5. SUNROOM RETIREMENT:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep HP above 0. If your plant survives to Day 20, you can retire it to your permanent Sunroom collection!</p>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setTutorialOpen(false)}
-                  className="retro-btn w-full py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] mt-4 font-bold"
-                >
+                <button onClick={() => setTutorialOpen(false)} className="retro-btn w-full py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] mt-4 font-bold">
                   DISMISS
                 </button>
               </div>
@@ -1097,7 +897,7 @@
           {nameModal.open && (
             <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
               <div className="w-full max-w-xs retro-panel p-4">
-                <h3 className="text-[10px] text-slate-900 dark:text-white mb-2">
+                <h3 className="text-[10px] text-slate-900 dark:text-white mb-2 font-bold">
                   {nameModal.isNew ? ('NEW FILE (SLOT ' + (nameModal.slotIndex + 1) + ')') : 'RENAME FILE'}
                 </h3>
                 <p className="text-[8px] text-slate-600 dark:text-retro-border mb-4 leading-relaxed">
@@ -1112,7 +912,7 @@
                     className="w-full px-2 py-2 text-[10px] bg-slate-100 dark:bg-black border-2 border-slate-600 dark:border-retro-border text-emerald-700 dark:text-retro-neonGreen focus:outline-none focus:border-black dark:focus:border-white mb-4 uppercase font-bold"
                   />
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })} className="retro-btn flex-1 py-2 text-[8px] bg-slate-200 dark:bg-black text-black dark:text-white">
+                    <button type="button" onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })} className="retro-btn flex-1 py-2 text-[8px] bg-slate-200 dark:bg-black text-black dark:text-white font-bold">
                       CANCEL
                     </button>
                     <button type="submit" className="retro-btn flex-1 py-2 text-[8px] bg-emerald-500 dark:bg-retro-neonGreen text-black font-bold">
@@ -1125,33 +925,28 @@
           )}
 
           {/* ======================= MODAL: SPECIES DISCOVERY ======================= */}
-          {revealModal.open && revealModal.plantType && (
+          {revealModal.open && revealModal.plantType && getArch(revealModal.plantType) && (
             <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
               <div className="w-full max-w-xs retro-panel border-emerald-500 dark:border-retro-neonGreen p-5 text-center">
-                
                 <div className="mb-4 animate-pulse">
                   <span className="text-[10px] text-black bg-emerald-400 dark:bg-retro-neonGreen px-2 py-1 font-bold">SPECIES IDENTIFIED!</span>
                 </div>
-
-                <h2 className="text-sm text-slate-900 dark:text-white mb-2">
+                <h2 className="text-sm text-slate-900 dark:text-white mb-2 font-bold">
                   {getArch(revealModal.plantType).name}
                 </h2>
-
                 <p className="text-[8px] text-slate-600 dark:text-retro-border mb-4 leading-loose">
                   {getArch(revealModal.plantType).tagline}
                 </p>
-
                 <div className="bg-slate-100 dark:bg-black border-2 border-slate-600 dark:border-retro-border p-3 text-left text-[8px] space-y-2 mb-6">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between font-bold">
                     <span className="text-slate-600 dark:text-retro-border">IDEAL H2O:</span>
-                    <span className="text-blue-600 dark:text-retro-blue font-bold">{getArch(revealModal.plantType).moisture[0]}-{getArch(revealModal.plantType).moisture[1]}%</span>
+                    <span className="text-blue-600 dark:text-retro-blue">{getArch(revealModal.plantType).moisture[0]}-{getArch(revealModal.plantType).moisture[1]}%</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between font-bold">
                     <span className="text-slate-600 dark:text-retro-border">IDEAL SUN:</span>
-                    <span className="text-amber-600 dark:text-retro-yellow font-bold">{getArch(revealModal.plantType).sunlight[0]}-{getArch(revealModal.plantType).sunlight[1]}%</span>
+                    <span className="text-amber-600 dark:text-retro-yellow">{getArch(revealModal.plantType).sunlight[0]}-{getArch(revealModal.plantType).sunlight[1]}%</span>
                   </div>
                 </div>
-
                 <button onClick={() => setRevealModal({ open: false, plantType: null })} className="retro-btn w-full py-3 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] font-bold">
                   CONTINUE
                 </button>
