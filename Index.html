@@ -3,19 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Tiny Plant Sim 1.0</title>
+  <title>Tiny Plant Sim 1.0 - Retro Edition</title>
+  
+  <!-- 90s Pixel Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Press Start 2P"', 'monospace']
+          },
           colors: {
-            plant: {
-              green: '#22c55e',
-              wilt: '#a3905c',
-              dead: '#78716c',
-              scorched: '#b45309'
+            retro: {
+              bg: '#111827', // Dark screen
+              panel: '#1f2937',
+              green: '#39ff14', // Neon arcade green
+              red: '#ff003c',   // Neon red
+              yellow: '#ffea00', // Arcade yellow
+              blue: '#00f0ff',   // Cyan/Blue
+              border: '#94a3b8'
             }
           }
         }
@@ -31,60 +42,81 @@
       height: 100dvh;
       overflow: hidden;
       touch-action: manipulation;
+      background-color: #000;
     }
     body {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
     }
+    /* CRT Scanline Filter */
+    .crt-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 4px, 3px 100%;
+      z-index: 100;
+      pointer-events: none;
+    }
+    
+    /* Reusable Retro UI Classes */
+    .retro-panel {
+      background-color: #1f2937;
+      border: 3px solid #94a3b8;
+      box-shadow: 4px 4px 0px 0px #000;
+    }
+    .retro-btn {
+      border: 2px solid #fff;
+      box-shadow: 3px 3px 0px 0px #000;
+      transition: all 0.05s ease;
+    }
+    .retro-btn:active:not(:disabled) {
+      transform: translate(3px, 3px);
+      box-shadow: 0px 0px 0px 0px #000;
+    }
+    .retro-btn:disabled {
+      opacity: 0.5;
+      box-shadow: 1px 1px 0px 0px #000;
+      transform: translate(2px, 2px);
+    }
+    
+    /* Jagged SVG Rendering for 8-bit feel */
+    svg.pixelated {
+      shape-rendering: crispEdges;
+    }
   </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
-  <div id="root" class="h-full"></div>
+<body class="text-white">
+  <div class="crt-overlay"></div>
+  <div id="root" class="h-full relative z-10 bg-retro-bg"></div>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
 
     const PLANT_ARCHETYPES = {
       cactus: {
-        name: 'Desert Cactus',
-        tagline: 'Loves intense sunshine and very little water.',
-        moisture: [10, 35],
-        sunlight: [65, 95],
-        temp: [72, 95],
-        soil: [25, 65],
-        color: '#15803d',
-        leafColor: '#166534'
+        name: 'DESERT CACTUS',
+        tagline: 'LOVES INTENSE SUN & LITTLE WATER.',
+        moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65],
+        color: '#22c55e', leafColor: '#16a34a'
       },
       succulent: {
-        name: 'Fleshy Succulent',
-        tagline: 'Thrives in warmth with moderate light and dry soil.',
-        moisture: [20, 45],
-        sunlight: [55, 85],
-        temp: [65, 88],
-        soil: [40, 75],
-        color: '#0d9488',
-        leafColor: '#14b8a6'
+        name: 'FLESHY SUCC',
+        tagline: 'THRIVES IN WARMTH & DRY SOIL.',
+        moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75],
+        color: '#14b8a6', leafColor: '#0d9488'
       },
       fern: {
-        name: 'Canopy Fern',
-        tagline: 'Craves moisture, high humidity, and gentle shade.',
-        moisture: [60, 90],
-        sunlight: [25, 55],
-        temp: [60, 76],
-        soil: [60, 95],
-        color: '#16a34a',
-        leafColor: '#4ade80'
+        name: 'CANOPY FERN',
+        tagline: 'CRAVES MOISTURE & GENTLE SHADE.',
+        moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95],
+        color: '#4ade80', leafColor: '#22c55e'
       },
       leafy: {
-        name: 'Broadleaf Aroid',
-        tagline: 'Enjoys balanced light, steady warmth, and rich soil.',
-        moisture: [45, 75],
-        sunlight: [40, 75],
-        temp: [65, 82],
-        soil: [50, 90],
-        color: '#22c55e',
-        leafColor: '#86efac'
+        name: 'BROAD AROID',
+        tagline: 'BALANCED LIGHT & STEADY WARMTH.',
+        moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90],
+        color: '#86efac', leafColor: '#4ade80'
       }
     };
 
@@ -96,62 +128,52 @@
 
       return {
         id: Date.now(),
-        slotName: customName || `Plant Spot ${slotNum + 1}`,
+        slotName: customName || `SLOT ${slotNum + 1}`,
         type: chosenType,
         revealed: false,
         revealAge: randomReveal,
         age: 1.0,
         health: 100,
         isDead: false,
-        potColor: ['#c2410c', '#b45309', '#047857', '#475569'][slotNum % 4],
-        conditions: {
-          moisture: 50,
-          sunlight: 50,
-          temperature: 72,
-          soilHealth: 85,
-          infestation: 0
-        },
+        potColor: ['#ea580c', '#d97706', '#059669', '#475569'][slotNum % 4],
+        conditions: { moisture: 50, sunlight: 50, temperature: 72, soilHealth: 85, infestation: 0 },
         ideals: {
-          moisture: [...archetype.moisture],
-          sunlight: [...archetype.sunlight],
-          temp: [...archetype.temp],
-          soil: [...archetype.soil]
+          moisture: [...archetype.moisture], sunlight: [...archetype.sunlight],
+          temp: [...archetype.temp], soil: [...archetype.soil]
         }
       };
     }
 
+    // Simplified Blocky Icons for Retro feel
     const DropletIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L12 2 L16 10 L18 14 L18 18 L16 22 L8 22 L6 18 L6 14 L8 10 Z"/></svg>
     );
     const SunIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8"/><rect x="11" y="2" width="2" height="4"/><rect x="11" y="18" width="2" height="4"/><rect x="2" y="11" width="4" height="2"/><rect x="18" y="11" width="4" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/><rect x="4" y="18" width="2" height="2"/><rect x="18" y="4" width="2" height="2"/></svg>
     );
     const ThermometerIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="4" height="14"/><rect x="8" y="14" width="8" height="8"/></svg>
     );
     const BugIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="14" x="8" y="6" rx="4"/><path d="m19 7-3 2"/><path d="m5 7 3 2"/><path d="m19 19-3-2"/><path d="m5 19 3-2"/><path d="M20 13h-4"/><path d="M4 13h4"/><path d="m10 4 1 2"/><path d="m14 4-1 2"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="6" width="8" height="12"/><rect x="4" y="8" width="4" height="2"/><rect x="16" y="8" width="4" height="2"/><rect x="4" y="14" width="4" height="2"/><rect x="16" y="14" width="4" height="2"/><rect x="10" y="2" width="1" height="4"/><rect x="13" y="2" width="1" height="4"/></svg>
     );
     const ShovelIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22v-5l5-5 5 5-5 5z"/><path d="M9.5 14.5 16 8"/><path d="m17 2 5 5-.5.5a3.53 3.53 0 0 1-5 0s0 0 0 0a3.53 3.53 0 0 1 0-5L17 2"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="14,2 22,2 22,10 12,20 4,20 4,12"/><rect x="4" y="14" width="6" height="6" fill="#111827"/></svg>
     );
     const SprayIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3h4v4H3z"/><path d="M5 7v14"/><path d="M9 9h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/><path d="m17 7 2-2"/><path d="m19 9 2-1"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="14"/><rect x="10" y="4" width="4" height="4"/><rect x="4" y="4" width="6" height="2"/><rect x="2" y="4" width="2" height="6"/></svg>
     );
     const ScissorsIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
-    );
-    const MoonIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><polygon points="10,10 20,2 20,6 12,12"/><polygon points="10,14 20,22 20,18 12,12"/><rect x="6" y="6" width="2" height="2" fill="#111827"/><rect x="6" y="16" width="2" height="2" fill="#111827"/></svg>
     );
     const PencilIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="16,2 22,8 8,22 2,22 2,16"/></svg>
     );
     const ArrowLeftIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>
     );
     const TrashIcon = () => (
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>
     );
 
     function App() {
@@ -164,20 +186,9 @@
         });
       });
       const [plant, setPlant] = useState(null);
-      const [darkMode, setDarkMode] = useState(() => localStorage.getItem('plant_dark_mode') === 'true');
       const [toast, setToast] = useState('');
-
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
-
-      useEffect(() => {
-        if (darkMode) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        localStorage.setItem('plant_dark_mode', darkMode);
-      }, [darkMode]);
 
       useEffect(() => {
         if (!plant) return;
@@ -281,36 +292,36 @@
             case 'water':
               c.moisture = Math.min(100, c.moisture + 22);
               if (c.infestation > 0) c.infestation = Math.max(0, c.infestation - 4);
-              showToast('+22% Water');
+              showToast('+H2O');
               break;
             case 'fertilize':
               c.soilHealth = Math.min(100, c.soilHealth + 26);
-              showToast('Soil Enriched');
+              showToast('+SOIL');
               break;
             case 'sun_up':
               c.sunlight = Math.min(100, c.sunlight + 15);
-              showToast('+15% Light');
+              showToast('+SUN');
               break;
             case 'sun_down':
               c.sunlight = Math.max(0, c.sunlight - 15);
-              showToast('-15% Light');
+              showToast('-SUN');
               break;
             case 'temp_up':
               c.temperature = Math.min(105, c.temperature + 4);
-              showToast('+4°F Heat');
+              showToast('+HEAT');
               break;
             case 'temp_down':
               c.temperature = Math.max(40, c.temperature - 4);
-              showToast('-4°F Heat');
+              showToast('-HEAT');
               break;
             case 'spray':
               c.infestation = Math.max(0, c.infestation - 45);
               c.soilHealth = Math.max(0, c.soilHealth - 6);
-              showToast('Pests Cleared');
+              showToast('PESTS CLR');
               break;
             case 'prune':
               h = Math.min(100, h + 8);
-              showToast('+8 Health (Pruned)');
+              showToast('+HP');
               break;
           }
 
@@ -319,42 +330,26 @@
       };
 
       const startNewGamePrompt = (slotIdx) => {
-        setNameModal({
-          open: true,
-          slotIndex: slotIdx,
-          currentName: `Plant Spot ${slotIdx + 1}`,
-          isNew: true
-        });
+        setNameModal({ open: true, slotIndex: slotIdx, currentName: `SLOT ${slotIdx + 1}`, isNew: true });
       };
 
       const editSlotNamePrompt = (slotIdx) => {
-        const current = slotsData[slotIdx]?.slotName || (plant && activeSlot === slotIdx ? plant.slotName : `Slot ${slotIdx + 1}`);
-        setNameModal({
-          open: true,
-          slotIndex: slotIdx,
-          currentName: current,
-          isNew: false
-        });
+        const current = slotsData[slotIdx]?.slotName || (plant && activeSlot === slotIdx ? plant.slotName : `SLOT ${slotIdx + 1}`);
+        setNameModal({ open: true, slotIndex: slotIdx, currentName: current, isNew: false });
       };
 
       const handleSaveName = (enteredName) => {
-        const finalName = enteredName.trim() || `Slot ${nameModal.slotIndex + 1}`;
+        const finalName = enteredName.trim().toUpperCase() || `SLOT ${nameModal.slotIndex + 1}`;
         if (nameModal.isNew) {
           const fresh = generateNewPlant(nameModal.slotIndex, finalName);
           setPlant(fresh);
           setActiveSlot(nameModal.slotIndex);
           localStorage.setItem(`plant_slot_${nameModal.slotIndex}`, JSON.stringify(fresh));
-          setSlotsData(prev => {
-            const next = [...prev];
-            next[nameModal.slotIndex] = fresh;
-            return next;
-          });
+          setSlotsData(prev => { const next = [...prev]; next[nameModal.slotIndex] = fresh; return next; });
           setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false });
           setScreen('game');
         } else {
-          if (plant && activeSlot === nameModal.slotIndex) {
-            setPlant(prev => ({ ...prev, slotName: finalName }));
-          }
+          if (plant && activeSlot === nameModal.slotIndex) setPlant(prev => ({ ...prev, slotName: finalName }));
           setSlotsData(prev => {
             const next = [...prev];
             if (next[nameModal.slotIndex]) {
@@ -369,13 +364,9 @@
 
       const deleteSlot = (slotIdx, e) => {
         e.stopPropagation();
-        if (confirm(`Clear Slot ${slotIdx + 1}?`)) {
+        if (confirm(`ERASE SLOT ${slotIdx + 1}?`)) {
           localStorage.removeItem(`plant_slot_${slotIdx}`);
-          setSlotsData(prev => {
-            const next = [...prev];
-            next[slotIdx] = null;
-            return next;
-          });
+          setSlotsData(prev => { const next = [...prev]; next[slotIdx] = null; return next; });
           if (activeSlot === slotIdx) setPlant(null);
         }
       };
@@ -386,29 +377,30 @@
         setScreen('game');
       };
 
+      // Arcade pure colors for status bars
       const getBarColor = (val, [min, max], isPest = false) => {
         if (isPest) {
-          if (val <= 15) return 'bg-emerald-500';
-          if (val <= 40) return 'bg-amber-500';
-          return 'bg-rose-500';
+          if (val <= 15) return 'bg-retro-green';
+          if (val <= 40) return 'bg-retro-yellow';
+          return 'bg-retro-red';
         }
-        if (val >= min && val <= max) return 'bg-emerald-500';
+        if (val >= min && val <= max) return 'bg-retro-green';
         const dist = Math.min(Math.abs(val - min), Math.abs(val - max));
-        if (dist <= 12) return 'bg-amber-500';
-        return 'bg-rose-500';
+        if (dist <= 12) return 'bg-retro-yellow';
+        return 'bg-retro-red';
       };
 
       const getVisualPlantColors = () => {
-        if (!plant) return { body: '#16a34a', leaf: '#4ade80', stroke: '#064e3b' };
-        if (plant.isDead) return { body: '#57534e', leaf: '#44403c', stroke: '#292524' };
+        if (!plant) return { body: '#39ff14', leaf: '#39ff14', stroke: '#000' };
+        if (plant.isDead) return { body: '#555', leaf: '#444', stroke: '#000' };
         if (plant.health < 35 && plant.conditions.moisture < plant.ideals.moisture[0]) {
-          return { body: '#a16207', leaf: '#ca8a04', stroke: '#713f12' };
+          return { body: '#d97706', leaf: '#f59e0b', stroke: '#000' };
         }
         if (plant.health < 35 && plant.conditions.moisture > plant.ideals.moisture[1]) {
-          return { body: '#4d7c0f', leaf: '#3f6212', stroke: '#1a2e05' };
+          return { body: '#064e3b', leaf: '#047857', stroke: '#000' };
         }
         const arch = PLANT_ARCHETYPES[plant.type];
-        return { body: arch.color, leaf: arch.leafColor, stroke: '#064e3b' };
+        return { body: arch.color, leaf: arch.leafColor, stroke: '#000' };
       };
 
       const colors = getVisualPlantColors();
@@ -419,97 +411,64 @@
       const isBlooming = plant && !plant.isDead && plant.age >= 6 && plant.health >= 55;
 
       return (
-        <div className="h-full w-full max-w-md mx-auto flex flex-col justify-between overflow-hidden p-2.5 box-border">
+        <div className="h-full w-full max-w-md mx-auto flex flex-col justify-between overflow-hidden p-3 box-border">
           
           {/* ======================= SCREEN 1: TITLE / HOME ======================= */}
           {screen === 'home' && (
             <div className="h-full flex flex-col justify-between py-2">
-              <div className="flex justify-between items-center px-1">
-                <span className="text-xs font-bold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase">Pocket Garden</span>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
-                >
-                  {darkMode ? <SunIcon /> : <MoonIcon />}
-                </button>
+              <div className="flex justify-center items-center px-1 py-4">
+                <span className="text-[10px] text-retro-border">INSERT COIN TO PLAY</span>
               </div>
 
               <div className="flex flex-col items-center my-auto text-center px-4">
-                <div className="w-16 h-16 mb-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border-2 border-emerald-500 shadow-sm">
-                  <svg className="w-10 h-10 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22v-9"/>
-                    <path d="M12 13a5 5 0 0 0 5-5c0-4-5-6-5-6s-5 2-5 6a5 5 0 0 0 5 5z"/>
-                  </svg>
+                <div className="w-16 h-16 mb-4 bg-black flex items-center justify-center border-4 border-retro-green shadow-[4px_4px_0px_0px_#39ff14]">
+                  <DropletIcon />
                 </div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">
-                  Tiny Plant Sim 1.0
+                <h1 className="text-xl leading-relaxed text-retro-green shadow-black drop-shadow-md">
+                  TINY PLANT<br/>SIM v1.0
                 </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[240px]">
-                  Procedural desktop flora. Choose a pot to start caring for your plant.
+                <p className="text-[8px] text-retro-border mt-4 max-w-[240px] leading-loose">
+                  PROCEDURAL FLORA.<br/>SELECT A SAVE FILE.
                 </p>
               </div>
 
-              <div className="space-y-2 mb-3">
+              <div className="space-y-3 mb-6">
                 {[0, 1, 2].map((idx) => {
                   const data = slotsData[idx];
                   return (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs"
-                    >
+                    <div key={idx} className="retro-panel flex items-center justify-between p-3">
                       {data ? (
                         <div className="flex-1 min-w-0 pr-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold truncate">
-                              {data.slotName || `Slot ${idx + 1}`}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-retro-blue truncate">
+                              {data.slotName || `SLOT ${idx + 1}`}
                             </span>
-                            <button
-                              onClick={() => editSlotNamePrompt(idx)}
-                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
-                            >
-                              <PencilIcon />
-                            </button>
+                            <button onClick={() => editSlotNamePrompt(idx)} className="text-retro-border hover:text-white"><PencilIcon /></button>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                            <span>{data.isDead ? 'Withered' : data.revealed ? PLANT_ARCHETYPES[data.type].name : 'Mystery Seedling'}</span>
-                            <span>•</span>
-                            <span>Day {Math.floor(data.age)}</span>
-                            <span>•</span>
-                            <span className={`font-semibold ${data.isDead ? 'text-rose-500' : 'text-emerald-500'}`}>
-                              {data.isDead ? 'Dead' : `${data.health}% HP`}
-                            </span>
+                          <div className="flex flex-col gap-1 mt-2 text-[8px] text-retro-border">
+                            <span>{data.isDead ? 'WITHERED' : data.revealed ? PLANT_ARCHETYPES[data.type].name : 'MYSTERY SEED'}</span>
+                            <span>DAY {Math.floor(data.age)} • <span className={data.isDead ? 'text-retro-red' : 'text-retro-green'}>{data.isDead ? 'DEAD' : `${data.health}% HP`}</span></span>
                           </div>
                         </div>
                       ) : (
                         <div className="flex-1 min-w-0">
-                          <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                            Slot {idx + 1}: Empty
-                          </span>
+                          <span className="text-[10px] text-retro-border">FILE {idx + 1} : EMPTY</span>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         {data ? (
                           <>
-                            <button
-                              onClick={() => selectSlotToPlay(idx)}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs"
-                            >
-                              Continue
+                            <button onClick={() => selectSlotToPlay(idx)} className="retro-btn bg-retro-green text-black px-2 py-2 text-[8px]">
+                              PLAY
                             </button>
-                            <button
-                              onClick={(e) => deleteSlot(idx, e)}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
-                            >
+                            <button onClick={(e) => deleteSlot(idx, e)} className="retro-btn bg-retro-red text-white p-2">
                               <TrashIcon />
                             </button>
                           </>
                         ) : (
-                          <button
-                            onClick={() => startNewGamePrompt(idx)}
-                            className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition-colors"
-                          >
-                            + Plant Seed
+                          <button onClick={() => startNewGamePrompt(idx)} className="retro-btn bg-retro-panel border-retro-border text-white px-2 py-2 text-[8px]">
+                            NEW GAME
                           </button>
                         )}
                       </div>
@@ -518,397 +477,243 @@
                 })}
               </div>
 
-              <footer className="text-center text-[10px] text-slate-400">
-                Tiny Plant Sim 1.0 • Browser Cached
+              <footer className="text-center text-[8px] text-retro-border">
+                © 2026 RETRO STUDIOS
               </footer>
             </div>
           )}
 
-          {/* ======================= SCREEN 2: GAMEPLAY (TIGHT & BALANCED LAYOUT) ======================= */}
+          {/* ======================= SCREEN 2: GAMEPLAY (TIGHT LAYOUT) ======================= */}
           {screen === 'game' && plant && (
             <div className="h-full flex flex-col justify-between overflow-hidden">
               
-              {/* TOP SECTION: Header & Snapped Name/Day */}
-              <div className="shrink-0 space-y-1 pb-1">
-                {/* Navigation and HP Bar */}
-                <div className="flex items-center justify-between py-1 border-b border-slate-200 dark:border-slate-800">
-                  <button
-                    onClick={() => setScreen('home')}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-slate-200 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 active:scale-95"
-                  >
-                    <ArrowLeftIcon /> Slots
+              {/* TOP SECTION */}
+              <div className="shrink-0 space-y-2 pb-1">
+                <div className="flex items-center justify-between py-1 border-b-4 border-retro-panel">
+                  <button onClick={() => setScreen('home')} className="retro-btn bg-retro-panel text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
+                    <ArrowLeftIcon /> BACK
                   </button>
 
-                  <div className="flex items-center gap-1 max-w-[150px] truncate">
-                    <span className="text-xs font-bold truncate">{plant.slotName}</span>
-                    <button
-                      onClick={() => editSlotNamePrompt(activeSlot)}
-                      className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    >
-                      <PencilIcon />
-                    </button>
+                  <div className="flex items-center gap-2 max-w-[140px] truncate">
+                    <span className="text-[10px] text-retro-blue truncate">{plant.slotName}</span>
+                    <button onClick={() => editSlotNamePrompt(activeSlot)} className="text-retro-border hover:text-white"><PencilIcon /></button>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
-                      plant.isDead
-                        ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300'
-                        : plant.health > 70
-                        ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
-                        : plant.health > 35
-                        ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
-                        : 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 animate-pulse'
-                    }`}>
-                      {plant.isDead ? 'Dead' : `${plant.health}% HP`}
-                    </span>
-                    <button
-                      onClick={() => setDarkMode(!darkMode)}
-                      className="p-1 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
-                    >
-                      {darkMode ? <SunIcon /> : <MoonIcon />}
-                    </button>
-                  </div>
+                  <span className={`text-[10px] px-2 py-1 border-2 border-current bg-black ${plant.isDead ? 'text-retro-red' : plant.health > 70 ? 'text-retro-green' : plant.health > 35 ? 'text-retro-yellow' : 'text-retro-red'}`}>
+                    {plant.isDead ? 'DEAD' : `HP:${plant.health}`}
+                  </span>
                 </div>
 
-                {/* Plant Name & Day Count (Tucked immediately underneath the header bar) */}
-                <div className="flex justify-between items-center px-1 pt-0.5">
-                  <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
-                    {plant.isDead ? 'Withered Specimen' : plant.revealed ? PLANT_ARCHETYPES[plant.type].name : 'Mystery Seedling'}
+                <div className="flex justify-between items-center px-1 pt-1">
+                  <span className="text-[10px] text-white">
+                    {plant.isDead ? 'WITHERED' : plant.revealed ? PLANT_ARCHETYPES[plant.type].name : 'MYSTERY SEED'}
                   </span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    Day {Math.floor(plant.age)}
+                  <span className="text-[10px] text-retro-border">
+                    DAY {Math.floor(plant.age)}
                   </span>
                 </div>
               </div>
 
-              {/* MIDDLE SECTION: Fully Expanded Plant Visual & Status Meters Card */}
-              <div className="flex-1 min-h-0 grid grid-cols-12 gap-2.5 my-1.5 items-stretch bg-white dark:bg-slate-900 rounded-2xl p-2.5 shadow-xs border border-slate-200 dark:border-slate-800">
-                {/* Dynamic SVG Visual Window */}
-                <div className="col-span-6 h-full flex flex-col items-center justify-center relative bg-slate-50 dark:bg-slate-950/50 rounded-xl p-1 border border-slate-100 dark:border-slate-800/80 overflow-hidden">
-                  <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible" preserveAspectRatio="xMidYMid meet">
+              {/* MIDDLE SECTION: Expanded Visuals */}
+              <div className="flex-1 min-h-0 grid grid-cols-12 gap-3 my-2 items-stretch retro-panel p-2">
+                
+                {/* SVG Visual Window (Blocky, Crisp Edges) */}
+                <div className="col-span-7 h-full flex flex-col items-center justify-center relative bg-black border-4 border-retro-border overflow-hidden">
+                  <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
+                    
                     {plant.conditions.infestation > 10 && (
-                      <g fill="#ef4444" opacity="0.8">
-                        <circle cx="85" cy={soilBaseY - 30} r="2.5" />
-                        <circle cx="115" cy={soilBaseY - 45} r="2" />
-                        <circle cx="102" cy={soilBaseY - 60} r="2.5" />
-                        <circle cx="75" cy={soilBaseY - 15} r="1.8" />
+                      <g fill="#ff003c">
+                        <rect x="85" y={soilBaseY - 30} width="4" height="4" />
+                        <rect x="115" y={soilBaseY - 45} width="4" height="4" />
+                        <rect x="102" y={soilBaseY - 60} width="4" height="4" />
+                        <rect x="75" y={soilBaseY - 15} width="4" height="4" />
                       </g>
                     )}
 
                     {plant.isDead ? (
-                      <g stroke="#57534e" strokeWidth="4" strokeLinecap="round" fill="none">
-                        <path d={`M 100 170 Q 102 140 120 135 Q 135 132 135 155`} />
-                        <path d={`M 112 140 Q 125 150 120 162`} />
+                      <g stroke="#555" strokeWidth="6" fill="none">
+                        <polyline points="100,170 102,140 120,135 135,132 135,155" />
+                        <polyline points="112,140 125,150 120,162" />
                       </g>
                     ) : !plant.revealed ? (
-                      <g>
-                        <path
-                          d={`M 100 ${soilBaseY} Q 99 ${(soilBaseY + stemTopY) / 2} 100 ${stemTopY}`}
-                          stroke={colors.body}
-                          strokeWidth="3.5"
-                          strokeLinecap="round"
-                          fill="none"
-                        />
-                        <path
-                          d={`M 100 ${stemTopY} Q 80 ${stemTopY - 10} 78 ${stemTopY - 4} Q 85 ${stemTopY + 5} 100 ${stemTopY}`}
-                          fill={colors.leaf}
-                        />
-                        <path
-                          d={`M 100 ${stemTopY} Q 120 ${stemTopY - 10} 122 ${stemTopY - 4} Q 115 ${stemTopY + 5} 100 ${stemTopY}`}
-                          fill={colors.leaf}
-                        />
+                      <g strokeWidth="4">
+                        <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={colors.body} />
+                        <polyline points={`100,${stemTopY} 85,${stemTopY-5} 78,${stemTopY}`} stroke={colors.leaf} fill="none"/>
+                        <polyline points={`100,${stemTopY} 115,${stemTopY-5} 122,${stemTopY}`} stroke={colors.leaf} fill="none"/>
                       </g>
                     ) : plant.type === 'cactus' ? (
                       <g>
-                        <rect
-                          x="88"
-                          y={stemTopY}
-                          width="24"
-                          height={plantHeight}
-                          rx="12"
-                          fill={colors.body}
-                          stroke={colors.stroke}
-                          strokeWidth="1.5"
-                        />
-                        <line x1="84" y1={stemTopY + 20} x2="88" y2={stemTopY + 20} stroke="#fef08a" strokeWidth="1.5" />
-                        <line x1="112" y1={stemTopY + 24} x2="116" y2={stemTopY + 24} stroke="#fef08a" strokeWidth="1.5" />
-                        <line x1="84" y1={stemTopY + 45} x2="88" y2={stemTopY + 45} stroke="#fef08a" strokeWidth="1.5" />
+                        <rect x="88" y={stemTopY} width="24" height={plantHeight} fill={colors.body} stroke={colors.stroke} strokeWidth="4" />
+                        <line x1="84" y1={stemTopY + 20} x2="116" y2={stemTopY + 20} stroke="#ffea00" strokeWidth="2" />
+                        <line x1="84" y1={stemTopY + 45} x2="116" y2={stemTopY + 45} stroke="#ffea00" strokeWidth="2" />
                         {plant.age >= 10 && (
-                          <path
-                            d={`M 88 ${stemTopY + 35} H 75 V ${stemTopY + 15} H 82`}
-                            stroke={colors.body}
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            fill="none"
-                          />
+                          <polyline points={`88,${stemTopY+35} 75,${stemTopY+35} 75,${stemTopY+15} 82,${stemTopY+15}`} stroke={colors.body} strokeWidth="8" fill="none" />
                         )}
                         {plant.age >= 13 && (
-                          <path
-                            d={`M 112 ${stemTopY + 48} H 125 V ${stemTopY + 28} H 118`}
-                            stroke={colors.body}
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            fill="none"
-                          />
+                          <polyline points={`112,${stemTopY+48} 125,${stemTopY+48} 125,${stemTopY+28} 118,${stemTopY+28}`} stroke={colors.body} strokeWidth="8" fill="none" />
                         )}
-
                         {isBlooming && (
-                          <g transform={`translate(100, ${stemTopY - 4})`}>
-                            <circle cx="0" cy="0" r="7" fill="#f43f5e" />
-                            <circle cx="-5" cy="-2" r="4" fill="#fb7185" />
-                            <circle cx="5" cy="-2" r="4" fill="#fb7185" />
-                            <circle cx="0" cy="-5" r="4" fill="#fda4af" />
-                            <circle cx="0" cy="0" r="3" fill="#fef08a" />
-                          </g>
+                          <rect x="94" y={stemTopY - 12} width="12" height="12" fill="#ff003c" />
                         )}
                       </g>
                     ) : plant.type === 'fern' ? (
-                      <g stroke={colors.body} fill="none">
-                        <path
-                          d={`M 100 ${soilBaseY} Q 96 ${(soilBaseY + stemTopY) / 2} 98 ${stemTopY}`}
-                          strokeWidth="3"
-                        />
+                      <g stroke={colors.body} fill="none" strokeWidth="4">
+                        <line x1="100" y1={soilBaseY} x2="98" y2={stemTopY} />
                         {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
                           const yPos = soilBaseY - plantHeight * frac;
                           const spread = 20 + frac * 16;
                           return (
                             <g key={idx}>
-                              <path
-                                d={`M 100 ${yPos} Q ${100 - spread} ${yPos - 10} ${100 - spread - 4} ${yPos + 4}`}
-                                stroke={colors.leaf}
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                              />
-                              <path
-                                d={`M 100 ${yPos} Q ${100 + spread} ${yPos - 10} ${100 + spread + 4} ${yPos + 4}`}
-                                stroke={colors.leaf}
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                              />
+                              <polyline points={`100,${yPos} ${100-spread},${yPos-10} ${100-spread-4},${yPos+4}`} stroke={colors.leaf} />
+                              <polyline points={`100,${yPos} ${100+spread},${yPos-10} ${100+spread+4},${yPos+4}`} stroke={colors.leaf} />
                             </g>
                           );
                         })}
-
                         {isBlooming && (
-                          <g fill="#93c5fd" stroke="none">
-                            <circle cx="70" cy={stemTopY + 18} r="3" />
-                            <circle cx="70" cy={stemTopY + 18} r="1.2" fill="#fef08a" />
-                            <circle cx="128" cy={stemTopY + 22} r="3" />
-                            <circle cx="128" cy={stemTopY + 22} r="1.2" fill="#fef08a" />
-                            <circle cx="98" cy={stemTopY - 2} r="3.5" fill="#e0e7ff" />
-                            <circle cx="98" cy={stemTopY - 2} r="1.5" fill="#fef08a" />
+                          <g fill="#00f0ff" stroke="none">
+                            <rect x="68" y={stemTopY + 16} width="6" height="6" />
+                            <rect x="126" y={stemTopY + 20} width="6" height="6" />
+                            <rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" />
                           </g>
                         )}
                       </g>
                     ) : plant.type === 'succulent' ? (
-                      <g>
-                        <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="1">
-                          <ellipse cx="100" cy={soilBaseY - 10} rx="34" ry="10" />
-                          <ellipse cx="80" cy={soilBaseY - 14} rx="16" ry="8" transform="rotate(-20 80 156)" />
-                          <ellipse cx="120" cy={soilBaseY - 14} rx="16" ry="8" transform="rotate(20 120 156)" />
-                          <ellipse cx="100" cy={soilBaseY - 20} rx="24" ry="9" />
-                          <ellipse cx="88" cy={soilBaseY - 28} rx="14" ry="7" transform="rotate(-15 88 142)" />
-                          <ellipse cx="112" cy={soilBaseY - 28} rx="14" ry="7" transform="rotate(15 112 142)" />
-                          <ellipse cx="100" cy={soilBaseY - 34} rx="14" ry="8" fill={colors.body} />
-                        </g>
-
+                      <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="2">
+                        <rect x="66" y={soilBaseY - 20} width="68" height="20" />
+                        <rect x="76" y={soilBaseY - 30} width="48" height="18" />
+                        <rect x="86" y={soilBaseY - 40} width="28" height="16" fill={colors.body} />
                         {isBlooming && (
                           <g>
-                            <path
-                              d={`M 100 ${soilBaseY - 30} Q 118 ${soilBaseY - 60} 122 ${soilBaseY - 80}`}
-                              stroke="#10b981"
-                              strokeWidth="2"
-                              fill="none"
-                            />
-                            <circle cx="122" cy={soilBaseY - 80} r="4" fill="#fb923c" />
-                            <circle cx="122" cy={soilBaseY - 80} r="1.5" fill="#fef08a" />
-                            <circle cx="117" cy={soilBaseY - 70} r="3" fill="#f97316" />
+                            <polyline points={`100,${soilBaseY-30} 118,${soilBaseY-60} 122,${soilBaseY-80}`} stroke="#39ff14" strokeWidth="4" fill="none" />
+                            <rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" />
                           </g>
                         )}
                       </g>
                     ) : (
                       <g>
-                        <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="1">
-                          <path
-                            d={`M 100 ${soilBaseY} Q 102 ${(soilBaseY + stemTopY) / 2} 100 ${stemTopY}`}
-                            stroke={colors.body}
-                            strokeWidth="3.5"
-                            strokeLinecap="round"
-                            fill="none"
-                          />
-                          <path
-                            d={`M 100 ${soilBaseY - plantHeight * 0.4} Q 70 ${soilBaseY - plantHeight * 0.5} 62 ${soilBaseY - plantHeight * 0.35} Q 80 ${soilBaseY - plantHeight * 0.28} 100 ${soilBaseY - plantHeight * 0.35}`}
-                          />
-                          <path
-                            d={`M 100 ${soilBaseY - plantHeight * 0.65} Q 130 ${soilBaseY - plantHeight * 0.75} 138 ${soilBaseY - plantHeight * 0.6} Q 120 ${soilBaseY - plantHeight * 0.52} 100 ${soilBaseY - plantHeight * 0.6}`}
-                          />
-                          <path
-                            d={`M 100 ${stemTopY} Q 85 ${stemTopY - 20} 100 ${stemTopY - 25} Q 115 ${stemTopY - 20} 100 ${stemTopY}`}
-                          />
+                        <g fill={colors.leaf} stroke={colors.stroke} strokeWidth="2">
+                          <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={colors.body} strokeWidth="4" />
+                          <polygon points={`100,${soilBaseY - plantHeight*0.4} 70,${soilBaseY - plantHeight*0.5} 62,${soilBaseY - plantHeight*0.35} 80,${soilBaseY - plantHeight*0.28}`} />
+                          <polygon points={`100,${soilBaseY - plantHeight*0.65} 130,${soilBaseY - plantHeight*0.75} 138,${soilBaseY - plantHeight*0.6} 120,${soilBaseY - plantHeight*0.52}`} />
+                          <polygon points={`100,${stemTopY} 85,${stemTopY-20} 100,${stemTopY-25} 115,${stemTopY-20}`} />
                         </g>
-
                         {isBlooming && (
                           <g>
-                            <path
-                              d={`M 98 ${soilBaseY - 15} Q 84 ${soilBaseY - 50} 80 ${soilBaseY - 75}`}
-                              stroke="#22c55e"
-                              strokeWidth="2"
-                              fill="none"
-                            />
-                            <ellipse cx="79" cy={soilBaseY - 78} rx="7" ry="12" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
-                            <line x1="79" y1={soilBaseY - 72} x2="79" y2={soilBaseY - 82} stroke="#facc15" strokeWidth="3" strokeLinecap="round" />
+                            <polyline points={`98,${soilBaseY-15} 84,${soilBaseY-50} 80,${soilBaseY-75}`} stroke="#39ff14" strokeWidth="4" fill="none" />
+                            <rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" />
+                            <rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" />
                           </g>
                         )}
                       </g>
                     )}
 
-                    {/* Pot & Soil */}
-                    <ellipse cx="100" cy="170" rx="42" ry="7" fill="#3e2723" />
-                    <path
-                      d="M 60 170 L 68 208 C 69 212 73 214 78 214 L 122 214 C 127 214 131 212 132 208 L 140 170 Z"
-                      fill={plant.potColor}
-                    />
-                    <rect x="56" y="166" width="88" height="7" rx="3.5" fill={plant.potColor} filter="brightness(1.08)" />
+                    {/* Blocky Pot */}
+                    <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
+                    <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor} stroke="#000" strokeWidth="2" />
                   </svg>
                 </div>
 
-                {/* Status Condition Bars Column (Evenly Spaced) */}
-                <div className="col-span-6 flex flex-col justify-between py-1 px-0.5 text-xs">
+                {/* Status Condition Bars (Blocky, No curves) */}
+                <div className="col-span-5 flex flex-col justify-between py-1 px-1">
                   <div>
-                    <div className="flex justify-between items-center text-[10px] mb-0.5">
-                      <span className="flex items-center gap-1 font-medium"><DropletIcon /> Moisture</span>
-                      <span className="font-semibold">{plant.conditions.moisture}%</span>
+                    <div className="flex justify-between items-center text-[8px] mb-1">
+                      <span className="flex items-center gap-1"><DropletIcon /> H2O</span>
+                      <span>{plant.conditions.moisture}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${getBarColor(plant.conditions.moisture, plant.ideals.moisture)}`} style={{ width: `${plant.conditions.moisture}%` }} />
+                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                      <div className={`h-full ${getBarColor(plant.conditions.moisture, plant.ideals.moisture)}`} style={{ width: `${plant.conditions.moisture}%` }} />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center text-[10px] mb-0.5">
-                      <span className="flex items-center gap-1 font-medium"><SunIcon /> Sun</span>
-                      <span className="font-semibold">{plant.conditions.sunlight}%</span>
+                    <div className="flex justify-between items-center text-[8px] mb-1">
+                      <span className="flex items-center gap-1"><SunIcon /> SUN</span>
+                      <span>{plant.conditions.sunlight}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${getBarColor(plant.conditions.sunlight, plant.ideals.sunlight)}`} style={{ width: `${plant.conditions.sunlight}%` }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center text-[10px] mb-0.5">
-                      <span className="flex items-center gap-1 font-medium"><ThermometerIcon /> Temp</span>
-                      <span className="font-semibold">{plant.conditions.temperature}°F</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${getBarColor(plant.conditions.temperature, plant.ideals.temp)}`} style={{ width: `${Math.min(100, Math.max(0, (plant.conditions.temperature - 40) * 1.5))}%` }} />
+                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                      <div className={`h-full ${getBarColor(plant.conditions.sunlight, plant.ideals.sunlight)}`} style={{ width: `${plant.conditions.sunlight}%` }} />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center text-[10px] mb-0.5">
-                      <span className="flex items-center gap-1 font-medium"><ShovelIcon /> Soil</span>
-                      <span className="font-semibold">{plant.conditions.soilHealth}%</span>
+                    <div className="flex justify-between items-center text-[8px] mb-1">
+                      <span className="flex items-center gap-1"><ThermometerIcon /> TMP</span>
+                      <span>{plant.conditions.temperature}°</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${getBarColor(plant.conditions.soilHealth, plant.ideals.soil)}`} style={{ width: `${plant.conditions.soilHealth}%` }} />
+                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                      <div className={`h-full ${getBarColor(plant.conditions.temperature, plant.ideals.temp)}`} style={{ width: `${Math.min(100, Math.max(0, (plant.conditions.temperature - 40) * 1.5))}%` }} />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center text-[10px] mb-0.5">
-                      <span className="flex items-center gap-1 font-medium"><BugIcon /> Pests</span>
-                      <span className="font-semibold">{plant.conditions.infestation}%</span>
+                    <div className="flex justify-between items-center text-[8px] mb-1">
+                      <span className="flex items-center gap-1"><ShovelIcon /> DIRT</span>
+                      <span>{plant.conditions.soilHealth}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${getBarColor(plant.conditions.infestation, [0, 15], true)}`} style={{ width: `${plant.conditions.infestation}%` }} />
+                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                      <div className={`h-full ${getBarColor(plant.conditions.soilHealth, plant.ideals.soil)}`} style={{ width: `${plant.conditions.soilHealth}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center text-[8px] mb-1">
+                      <span className="flex items-center gap-1"><BugIcon /> BUG</span>
+                      <span>{plant.conditions.infestation}%</span>
+                    </div>
+                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                      <div className={`h-full ${getBarColor(plant.conditions.infestation, [0, 15], true)}`} style={{ width: `${plant.conditions.infestation}%` }} />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* BOTTOM SECTION: Tightly Snapped Action & Environmental Controls */}
-              <div className="shrink-0 space-y-1.5 pb-1">
-                {/* Floating Feedback Notification */}
-                <div className="h-4 flex items-center justify-center">
+              {/* BOTTOM SECTION: Snapped Action Controls */}
+              <div className="shrink-0 space-y-2 pb-1">
+                
+                {/* 8-bit Toast Notification */}
+                <div className="h-6 flex items-center justify-center">
                   {toast && (
-                    <span className="text-[10px] font-bold bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-2.5 py-0.5 rounded-full shadow-sm">
+                    <span className="text-[8px] text-black bg-retro-green px-2 py-1 border-2 border-white shadow-[2px_2px_0_0_#000]">
                       {toast}
                     </span>
                   )}
                 </div>
 
-                {/* 4 Action Buttons */}
-                <div className="grid grid-cols-4 gap-1.5">
-                  <button
-                    onClick={() => applyCare('water')}
-                    disabled={plant.isDead}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 active:scale-95 disabled:opacity-40"
-                  >
+                {/* Main Actions */}
+                <div className="grid grid-cols-4 gap-2">
+                  <button onClick={() => applyCare('water')} disabled={plant.isDead} className="retro-btn bg-[#1d4ed8] text-white py-2 flex flex-col items-center">
                     <DropletIcon />
-                    <span className="text-[10px] font-bold mt-1">Water</span>
+                    <span className="text-[7px] mt-2">WATER</span>
                   </button>
-
-                  <button
-                    onClick={() => applyCare('fertilize')}
-                    disabled={plant.isDead}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 active:scale-95 disabled:opacity-40"
-                  >
+                  <button onClick={() => applyCare('fertilize')} disabled={plant.isDead} className="retro-btn bg-[#b45309] text-white py-2 flex flex-col items-center">
                     <ShovelIcon />
-                    <span className="text-[10px] font-bold mt-1">Feed</span>
+                    <span className="text-[7px] mt-2">FEED</span>
                   </button>
-
-                  <button
-                    onClick={() => applyCare('spray')}
-                    disabled={plant.isDead}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 active:scale-95 disabled:opacity-40"
-                  >
+                  <button onClick={() => applyCare('spray')} disabled={plant.isDead} className="retro-btn bg-[#be123c] text-white py-2 flex flex-col items-center">
                     <SprayIcon />
-                    <span className="text-[10px] font-bold mt-1">Spray</span>
+                    <span className="text-[7px] mt-2">SPRAY</span>
                   </button>
-
-                  <button
-                    onClick={() => applyCare('prune')}
-                    disabled={plant.isDead}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 active:scale-95 disabled:opacity-40"
-                  >
+                  <button onClick={() => applyCare('prune')} disabled={plant.isDead} className="retro-btn bg-[#047857] text-white py-2 flex flex-col items-center">
                     <ScissorsIcon />
-                    <span className="text-[10px] font-bold mt-1">Prune</span>
+                    <span className="text-[7px] mt-2">PRUNE</span>
                   </button>
                 </div>
 
-                {/* Snapped Sun & Heat Controls */}
-                <div className="grid grid-cols-2 gap-1.5">
-                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[11px] font-semibold flex items-center gap-1"><SunIcon /> Sun</span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => applyCare('sun_down')}
-                        disabled={plant.isDead}
-                        className="w-6 h-6 flex items-center justify-center font-bold text-xs rounded bg-slate-100 dark:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40"
-                      >-</button>
-                      <button
-                        onClick={() => applyCare('sun_up')}
-                        disabled={plant.isDead}
-                        className="w-6 h-6 flex items-center justify-center font-bold text-xs rounded bg-slate-100 dark:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40"
-                      >+</button>
+                {/* Env Controls */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="retro-panel p-2 flex items-center justify-between">
+                    <span className="text-[8px] flex items-center gap-1"><SunIcon /> SUN</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => applyCare('sun_down')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">-</button>
+                      <button onClick={() => applyCare('sun_up')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">+</button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[11px] font-semibold flex items-center gap-1"><ThermometerIcon /> Heat</span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => applyCare('temp_down')}
-                        disabled={plant.isDead}
-                        className="w-6 h-6 flex items-center justify-center font-bold text-xs rounded bg-slate-100 dark:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40"
-                      >-</button>
-                      <button
-                        onClick={() => applyCare('temp_up')}
-                        disabled={plant.isDead}
-                        className="w-6 h-6 flex items-center justify-center font-bold text-xs rounded bg-slate-100 dark:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40"
-                      >+</button>
+                  <div className="retro-panel p-2 flex items-center justify-between">
+                    <span className="text-[8px] flex items-center gap-1"><ThermometerIcon /> TMP</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => applyCare('temp_down')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">-</button>
+                      <button onClick={() => applyCare('temp_up')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">+</button>
                     </div>
                   </div>
                 </div>
@@ -919,41 +724,28 @@
 
           {/* ======================= MODAL: RENAME / NEW SLOT ======================= */}
           {nameModal.open && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xl">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">
-                  {nameModal.isNew ? `Plant New Seed (Slot ${nameModal.slotIndex + 1})` : 'Rename Save Slot'}
+            <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+              <div className="w-full max-w-xs retro-panel p-4">
+                <h3 className="text-[10px] text-white mb-2">
+                  {nameModal.isNew ? `NEW FILE (SLOT ${nameModal.slotIndex + 1})` : 'RENAME FILE'}
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-                  Give your plant spot a memorable name.
+                <p className="text-[8px] text-retro-border mb-4 leading-relaxed">
+                  ENTER DESIGNATION CODE:
                 </p>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const inputVal = e.target.elements.slotInput.value;
-                    handleSaveName(inputVal);
-                  }}
-                >
+                <form onSubmit={(e) => { e.preventDefault(); handleSaveName(e.target.elements.slotInput.value); }}>
                   <input
                     name="slotInput"
                     defaultValue={nameModal.currentName}
                     autoFocus
-                    maxLength={20}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-3"
+                    maxLength={12}
+                    className="w-full px-2 py-2 text-[10px] bg-black border-2 border-retro-border text-retro-green focus:outline-none focus:border-white mb-4 uppercase"
                   />
                   <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })}
-                      className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                    >
-                      Cancel
+                    <button type="button" onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })} className="retro-btn flex-1 py-2 text-[8px] bg-black text-white">
+                      CANCEL
                     </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      {nameModal.isNew ? 'Plant' : 'Save'}
+                    <button type="submit" className="retro-btn flex-1 py-2 text-[8px] bg-retro-green text-black">
+                      ACCEPT
                     </button>
                   </div>
                 </form>
@@ -963,42 +755,34 @@
 
           {/* ======================= MODAL: SPECIES UNLOCKED ANNOUNCEMENT ======================= */}
           {revealModal.open && revealModal.plantType && (
-            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="w-full max-w-xs bg-white dark:bg-slate-900 border border-emerald-500/50 rounded-2xl p-5 shadow-2xl text-center">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500">
-                  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                  </svg>
+            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+              <div className="w-full max-w-xs retro-panel border-retro-green p-5 text-center">
+                
+                <div className="mb-4 animate-pulse">
+                  <span className="text-[10px] text-black bg-retro-green px-2 py-1">SPECIES IDENTIFIED!</span>
                 </div>
 
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full">
-                  Botanical Discovery!
-                </span>
-
-                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 mt-2">
+                <h2 className="text-sm text-white mb-2">
                   {PLANT_ARCHETYPES[revealModal.plantType].name}
                 </h2>
 
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">
+                <p className="text-[8px] text-retro-border mb-4 leading-loose">
                   {PLANT_ARCHETYPES[revealModal.plantType].tagline}
                 </p>
 
-                <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 text-left text-[11px] space-y-1 mb-4 border border-slate-100 dark:border-slate-800">
+                <div className="bg-black border-2 border-retro-border p-3 text-left text-[8px] space-y-2 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Ideal Water:</span>
-                    <span className="font-bold">{PLANT_ARCHETYPES[revealModal.plantType].moisture[0]}-{PLANT_ARCHETYPES[revealModal.plantType].moisture[1]}%</span>
+                    <span className="text-retro-border">IDEAL H2O:</span>
+                    <span className="text-retro-blue">{PLANT_ARCHETYPES[revealModal.plantType].moisture[0]}-{PLANT_ARCHETYPES[revealModal.plantType].moisture[1]}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Ideal Sunlight:</span>
-                    <span className="font-bold">{PLANT_ARCHETYPES[revealModal.plantType].sunlight[0]}-{PLANT_ARCHETYPES[revealModal.plantType].sunlight[1]}%</span>
+                    <span className="text-retro-border">IDEAL SUN:</span>
+                    <span className="text-retro-yellow">{PLANT_ARCHETYPES[revealModal.plantType].sunlight[0]}-{PLANT_ARCHETYPES[revealModal.plantType].sunlight[1]}%</span>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setRevealModal({ open: false, plantType: null })}
-                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95"
-                >
-                  Continue Caring
+                <button onClick={() => setRevealModal({ open: false, plantType: null })} className="retro-btn w-full py-3 bg-retro-green text-black text-[8px]">
+                  CONTINUE
                 </button>
               </div>
             </div>
