@@ -13,6 +13,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -22,7 +23,8 @@
             retro: {
               bg: '#111827',
               panel: '#1f2937',
-              green: '#39ff14',
+              green: '#16a34a',
+              neonGreen: '#39ff14',
               red: '#ff003c',
               yellow: '#ffea00',
               blue: '#00f0ff',
@@ -42,7 +44,6 @@
       height: 100dvh;
       overflow: hidden;
       touch-action: manipulation;
-      background-color: #000;
     }
     body {
       -webkit-tap-highlight-color: transparent;
@@ -54,7 +55,7 @@
     .crt-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
       background-size: 100% 4px, 3px 100%;
       z-index: 100;
       pointer-events: none;
@@ -62,14 +63,22 @@
     
     /* Retro UI Panels & Buttons */
     .retro-panel {
-      background-color: #1f2937;
-      border: 3px solid #94a3b8;
+      background-color: #ffffff;
+      border: 3px solid #334155;
       box-shadow: 4px 4px 0px 0px #000;
     }
+    .dark .retro-panel {
+      background-color: #1f2937;
+      border-color: #94a3b8;
+    }
+
     .retro-btn {
-      border: 2px solid #fff;
+      border: 2px solid #000;
       box-shadow: 3px 3px 0px 0px #000;
       transition: all 0.05s ease;
+    }
+    .dark .retro-btn {
+      border-color: #fff;
     }
     .retro-btn:active:not(:disabled) {
       transform: translate(3px, 3px);
@@ -126,9 +135,9 @@
     }
   </style>
 </head>
-<body class="text-white">
+<body class="bg-slate-200 dark:bg-black text-slate-900 dark:text-white transition-colors duration-150">
   <div class="crt-overlay"></div>
-  <div id="root" class="h-full relative z-10 bg-retro-bg"></div>
+  <div id="root" class="h-full relative z-10 bg-slate-200 dark:bg-retro-bg transition-colors duration-150"></div>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
@@ -138,25 +147,25 @@
         name: 'DESERT CACTUS',
         tagline: 'LOVES INTENSE SUN & LITTLE WATER.',
         moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65],
-        color: '#22c55e', leafColor: '#166534'
+        color: '#16a34a', leafColor: '#15803d'
       },
       succulent: {
         name: 'FLESHY SUCC',
         tagline: 'THRIVES IN WARMTH & DRY SOIL.',
         moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75],
-        color: '#14b8a6', leafColor: '#0d9488'
+        color: '#0d9488', leafColor: '#0f766e'
       },
       fern: {
         name: 'CANOPY FERN',
         tagline: 'CRAVES MOISTURE & GENTLE SHADE.',
         moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95],
-        color: '#4ade80', leafColor: '#22c55e'
+        color: '#22c55e', leafColor: '#16a34a'
       },
       leafy: {
         name: 'BROAD AROID',
         tagline: 'BALANCED LIGHT & STEADY WARMTH.',
         moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90],
-        color: '#86efac', leafColor: '#4ade80'
+        color: '#4ade80', leafColor: '#22c55e'
       }
     };
 
@@ -205,7 +214,10 @@
       <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L12 2 L16 10 L18 14 L18 18 L16 22 L8 22 L6 18 L6 14 L8 10 Z"/></svg>
     );
     const SunIcon = () => (
-      <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8"/><rect x="11" y="2" width="2" height="4"/><rect x="11" y="18" width="2" height="4"/><rect x="2" y="11" width="4" height="2"/><rect x="18" y="11" width="4" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/><rect x="4" y="18" width="2" height="2"/><rect x="18" y="4" width="2" height="2"/></svg>
+      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8"/><rect x="11" y="2" width="2" height="4"/><rect x="11" y="18" width="2" height="4"/><rect x="2" y="11" width="4" height="2"/><rect x="18" y="11" width="4" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/><rect x="4" y="18" width="2" height="2"/><rect x="18" y="4" width="2" height="2"/></svg>
+    );
+    const MoonIcon = () => (
+      <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="6" height="2"/><rect x="6" y="4" width="4" height="4"/><rect x="4" y="8" width="4" height="8"/><rect x="6" y="16" width="4" height="4"/><rect x="10" y="20" width="6" height="2"/><rect x="14" y="16" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/><rect x="12" y="8" width="4" height="4"/><rect x="14" y="4" width="4" height="4"/></svg>
     );
     const ThermometerIcon = () => (
       <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="10" y="2" width="4" height="14"/><rect x="8" y="14" width="8" height="8"/></svg>
@@ -241,6 +253,24 @@
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
       const [tutorialOpen, setTutorialOpen] = useState(false);
+      const [darkMode, setDarkMode] = useState(() => {
+        try {
+          return localStorage.getItem('plant_dark_mode') !== 'false';
+        } catch (e) {
+          return true;
+        }
+      });
+
+      useEffect(() => {
+        if (darkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        try {
+          localStorage.setItem('plant_dark_mode', darkMode);
+        } catch (e) {}
+      }, [darkMode]);
 
       useEffect(() => {
         if (!plant) return;
@@ -472,19 +502,19 @@
 
       const getBarColor = (val, min, max, isPest) => {
         if (isPest) {
-          if (val <= 15) return 'bg-retro-green';
-          if (val <= 40) return 'bg-retro-yellow';
+          if (val <= 15) return 'bg-retro-green dark:bg-retro-neonGreen';
+          if (val <= 40) return 'bg-amber-500 dark:bg-retro-yellow';
           return 'bg-retro-red';
         }
-        if (val >= min && val <= max) return 'bg-retro-green';
+        if (val >= min && val <= max) return 'bg-retro-green dark:bg-retro-neonGreen';
         const dist = Math.min(Math.abs(val - min), Math.abs(val - max));
-        if (dist <= 12) return 'bg-retro-yellow';
+        if (dist <= 12) return 'bg-amber-500 dark:bg-retro-yellow';
         return 'bg-retro-red';
       };
 
       const getVisualPlantColors = () => {
-        if (!plant) return { body: '#39ff14', leaf: '#39ff14', stroke: '#000' };
-        if (plant.isDead) return { body: '#555', leaf: '#444', stroke: '#000' };
+        if (!plant) return { body: '#16a34a', leaf: '#22c55e', stroke: '#000' };
+        if (plant.isDead) return { body: '#64748b', leaf: '#475569', stroke: '#000' };
         if (plant.health < 35 && plant.conditions.moisture < plant.ideals.moisture[0]) {
           return { body: '#d97706', leaf: '#f59e0b', stroke: '#000' };
         }
@@ -509,23 +539,32 @@
           {screen === 'home' && (
             <div className="h-full flex flex-col justify-between py-2">
               <div className="flex justify-between items-center px-1 py-1">
-                <span className="text-[10px] text-retro-green">POCKET GARDEN</span>
-                <button
-                  onClick={() => setTutorialOpen(true)}
-                  className="retro-btn bg-black text-retro-yellow px-2 py-1 text-[8px] hover:text-white"
-                >
-                  ? GUIDE
-                </button>
+                <span className="text-[10px] text-emerald-700 dark:text-retro-neonGreen font-bold">POCKET GARDEN</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setTutorialOpen(true)}
+                    className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1 text-[8px] hover:text-black dark:hover:text-white"
+                  >
+                    ? GUIDE
+                  </button>
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="retro-btn bg-white dark:bg-black text-slate-800 dark:text-white p-1 text-[8px] flex items-center justify-center"
+                    title="Toggle Theme"
+                  >
+                    {darkMode ? <SunIcon /> : <MoonIcon />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-col items-center my-auto text-center px-4">
-                <div className="w-16 h-16 mb-4 bg-black flex items-center justify-center border-4 border-retro-green shadow-[4px_4px_0px_0px_#39ff14]">
+                <div className="w-16 h-16 mb-4 bg-emerald-100 dark:bg-black text-emerald-600 dark:text-retro-neonGreen flex items-center justify-center border-4 border-slate-800 dark:border-retro-neonGreen shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#39ff14]">
                   <DropletIcon />
                 </div>
-                <h1 className="text-xl leading-relaxed text-retro-green shadow-black drop-shadow-md">
+                <h1 className="text-xl leading-relaxed text-emerald-800 dark:text-retro-neonGreen drop-shadow-xs dark:drop-shadow-[2px_2px_0px_#000]">
                   TINY PLANT<br/>SIM 1.0
                 </h1>
-                <p className="text-[8px] text-retro-border mt-3 max-w-[240px] leading-loose">
+                <p className="text-[8px] text-slate-600 dark:text-retro-border mt-3 max-w-[240px] leading-loose">
                   PROCEDURAL FLORA.<br/>SELECT A SAVE FILE.
                 </p>
               </div>
@@ -538,26 +577,26 @@
                       {data ? (
                         <div className="flex-1 min-w-0 pr-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-retro-blue truncate">
+                            <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate">
                               {data.slotName || ('SLOT ' + (idx + 1))}
                             </span>
-                            <button onClick={() => editSlotNamePrompt(idx)} className="text-retro-border hover:text-white"><PencilIcon /></button>
+                            <button onClick={() => editSlotNamePrompt(idx)} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
                           </div>
-                          <div className="flex flex-col gap-1 mt-2 text-[8px] text-retro-border">
+                          <div className="flex flex-col gap-1 mt-2 text-[8px] text-slate-500 dark:text-retro-border">
                             <span>{data.isDead ? 'WITHERED' : data.revealed ? (PLANT_ARCHETYPES[data.type] ? PLANT_ARCHETYPES[data.type].name : 'PLANT') : 'MYSTERY SEED'}</span>
-                            <span>DAY {Math.floor(data.age)} • <span className={data.isDead ? 'text-retro-red' : 'text-retro-green'}>{data.isDead ? 'DEAD' : (data.health + '% HP')}</span></span>
+                            <span>DAY {Math.floor(data.age)} • <span className={data.isDead ? 'text-retro-red' : 'text-emerald-600 dark:text-retro-neonGreen font-bold'}>{data.isDead ? 'DEAD' : (data.health + '% HP')}</span></span>
                           </div>
                         </div>
                       ) : (
                         <div className="flex-1 min-w-0">
-                          <span className="text-[10px] text-retro-border">FILE {idx + 1} : EMPTY</span>
+                          <span className="text-[10px] text-slate-400 dark:text-retro-border">FILE {idx + 1} : EMPTY</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-2 shrink-0">
                         {data ? (
                           <>
-                            <button onClick={() => selectSlotToPlay(idx)} className="retro-btn bg-retro-green text-black px-2 py-2 text-[8px]">
+                            <button onClick={() => selectSlotToPlay(idx)} className="retro-btn bg-emerald-500 dark:bg-retro-neonGreen text-black px-2 py-2 text-[8px] font-bold">
                               PLAY
                             </button>
                             <button onClick={(e) => deleteSlot(idx, e)} className="retro-btn bg-retro-red text-white p-2">
@@ -565,7 +604,7 @@
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => startNewGamePrompt(idx)} className="retro-btn bg-retro-panel border-retro-border text-white px-2 py-2 text-[8px]">
+                          <button onClick={() => startNewGamePrompt(idx)} className="retro-btn bg-slate-100 dark:bg-retro-panel text-slate-800 dark:text-white px-2 py-2 text-[8px]">
                             NEW
                           </button>
                         )}
@@ -575,7 +614,7 @@
                 })}
               </div>
 
-              <footer className="text-center text-[8px] text-retro-border">
+              <footer className="text-center text-[8px] text-slate-500 dark:text-retro-border">
                 © 2026 RETRO STUDIOS
               </footer>
             </div>
@@ -587,35 +626,44 @@
               
               {/* TOP SECTION: Header & Stats */}
               <div className="shrink-0 space-y-2 pb-1">
-                <div className="flex items-center justify-between py-1 border-b-4 border-retro-panel">
+                <div className="flex items-center justify-between py-1 border-b-4 border-slate-300 dark:border-retro-panel">
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => setScreen('home')} className="retro-btn bg-retro-panel text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
+                    <button onClick={() => setScreen('home')} className="retro-btn bg-white dark:bg-retro-panel text-slate-900 dark:text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
                       <ArrowLeftIcon /> BACK
                     </button>
                     <button
                       onClick={() => setTutorialOpen(true)}
-                      className="retro-btn bg-black text-retro-yellow px-2 py-1.5 text-[8px]"
+                      className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1.5 text-[8px]"
                       title="Guide"
                     >
                       ?
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 max-w-[130px] truncate">
-                    <span className="text-[10px] text-retro-blue truncate">{plant.slotName}</span>
-                    <button onClick={() => editSlotNamePrompt(activeSlot)} className="text-retro-border hover:text-white"><PencilIcon /></button>
+                  <div className="flex items-center gap-2 max-w-[120px] truncate">
+                    <span className="text-[10px] text-blue-700 dark:text-retro-blue truncate">{plant.slotName}</span>
+                    <button onClick={() => editSlotNamePrompt(activeSlot)} className="text-slate-400 dark:text-retro-border hover:text-black dark:hover:text-white"><PencilIcon /></button>
                   </div>
 
-                  <span className={'text-[10px] px-2 py-1 border-2 border-current bg-black ' + (plant.isDead ? 'text-retro-red' : plant.health > 70 ? 'text-retro-green' : plant.health > 35 ? 'text-retro-yellow' : 'text-retro-red')}>
-                    {plant.isDead ? 'DEAD' : ('HP:' + plant.health)}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={'text-[10px] px-2 py-1 border-2 border-current bg-white dark:bg-black font-bold ' + (plant.isDead ? 'text-retro-red' : plant.health > 70 ? 'text-emerald-600 dark:text-retro-neonGreen' : plant.health > 35 ? 'text-amber-500 dark:text-retro-yellow' : 'text-retro-red')}>
+                      {plant.isDead ? 'DEAD' : ('HP:' + plant.health)}
+                    </span>
+                    <button
+                      onClick={() => setDarkMode(!darkMode)}
+                      className="retro-btn bg-white dark:bg-black text-slate-800 dark:text-white p-1 text-[8px] flex items-center justify-center"
+                      title="Toggle Theme"
+                    >
+                      {darkMode ? <SunIcon /> : <MoonIcon />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center px-1 pt-1">
-                  <span className="text-[10px] text-white">
+                  <span className="text-[10px] text-slate-800 dark:text-white font-bold">
                     {plant.isDead ? 'WITHERED' : plant.revealed ? (PLANT_ARCHETYPES[plant.type] ? PLANT_ARCHETYPES[plant.type].name : 'PLANT') : 'MYSTERY SEED'}
                   </span>
-                  <span className="text-[10px] text-retro-border">
+                  <span className="text-[10px] text-slate-500 dark:text-retro-border font-bold">
                     DAY {Math.floor(plant.age)}
                   </span>
                 </div>
@@ -625,7 +673,7 @@
               <div className="flex-1 min-h-0 grid grid-cols-12 gap-3 my-2 items-stretch retro-panel p-2">
                 
                 {/* SVG Visual Window */}
-                <div className="col-span-7 h-full flex flex-col items-center justify-center relative bg-black border-4 border-retro-border overflow-hidden">
+                <div className="col-span-7 h-full flex flex-col items-center justify-center relative bg-slate-100 dark:bg-black border-4 border-slate-700 dark:border-retro-border overflow-hidden">
                   <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
                     
                     {/* Infestation bugs twitching */}
@@ -638,10 +686,10 @@
                       </g>
                     )}
 
-                    {/* ANIMATED PLANT LAYER (Leaves & Stems) */}
+                    {/* ANIMATED PLANT LAYER */}
                     <g className={plant.isDead ? '' : 'plant-idle-anim'}>
                       {plant.isDead ? (
-                        <g stroke="#555" strokeWidth="6" fill="none">
+                        <g stroke="#64748b" strokeWidth="6" fill="none">
                           <polyline points="100,170 102,140 120,135 135,132 135,155" />
                           <polyline points="112,140 125,150 120,162" />
                         </g>
@@ -680,7 +728,7 @@
                             );
                           })}
                           {isBlooming && (
-                            <g fill="#00f0ff" stroke="none" className="flower-anim">
+                            <g fill="#0284c7" stroke="none" className="flower-anim">
                               <rect x="68" y={stemTopY + 16} width="6" height="6" />
                               <rect x="126" y={stemTopY + 20} width="6" height="6" />
                               <rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" />
@@ -694,7 +742,7 @@
                           <rect x="86" y={soilBaseY - 40} width="28" height="16" fill={colors.body} />
                           {isBlooming && (
                             <g className="flower-anim">
-                              <polyline points={'100,' + (soilBaseY - 30) + ' 118,' + (soilBaseY - 60) + ' 122,' + (soilBaseY - 80)} stroke="#39ff14" strokeWidth="4" fill="none" />
+                              <polyline points={'100,' + (soilBaseY - 30) + ' 118,' + (soilBaseY - 60) + ' 122,' + (soilBaseY - 80)} stroke="#16a34a" strokeWidth="4" fill="none" />
                               <rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" />
                             </g>
                           )}
@@ -709,7 +757,7 @@
                           </g>
                           {isBlooming && (
                             <g className="flower-anim">
-                              <polyline points={'98,' + (soilBaseY - 15) + ' 84,' + (soilBaseY - 50) + ' 80,' + (soilBaseY - 75)} stroke="#39ff14" strokeWidth="4" fill="none" />
+                              <polyline points={'98,' + (soilBaseY - 15) + ' 84,' + (soilBaseY - 50) + ' 80,' + (soilBaseY - 75)} stroke="#16a34a" strokeWidth="4" fill="none" />
                               <rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" />
                               <rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" />
                             </g>
@@ -731,7 +779,7 @@
                       <span className="flex items-center gap-1"><DropletIcon /> H2O</span>
                       <span>{plant.conditions.moisture}%</span>
                     </div>
-                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
                       <div className={'h-full ' + getBarColor(plant.conditions.moisture, plant.ideals.moisture[0], plant.ideals.moisture[1], false)} style={{ width: plant.conditions.moisture + '%' }} />
                     </div>
                   </div>
@@ -741,7 +789,7 @@
                       <span className="flex items-center gap-1"><SunIcon /> SUN</span>
                       <span>{plant.conditions.sunlight}%</span>
                     </div>
-                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
                       <div className={'h-full ' + getBarColor(plant.conditions.sunlight, plant.ideals.sunlight[0], plant.ideals.sunlight[1], false)} style={{ width: plant.conditions.sunlight + '%' }} />
                     </div>
                   </div>
@@ -751,7 +799,7 @@
                       <span className="flex items-center gap-1"><ThermometerIcon /> TMP</span>
                       <span>{plant.conditions.temperature}°</span>
                     </div>
-                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
                       <div className={'h-full ' + getBarColor(plant.conditions.temperature, plant.ideals.temp[0], plant.ideals.temp[1], false)} style={{ width: Math.min(100, Math.max(0, (plant.conditions.temperature - 40) * 1.5)) + '%' }} />
                     </div>
                   </div>
@@ -761,7 +809,7 @@
                       <span className="flex items-center gap-1"><ShovelIcon /> DIRT</span>
                       <span>{plant.conditions.soilHealth}%</span>
                     </div>
-                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
                       <div className={'h-full ' + getBarColor(plant.conditions.soilHealth, plant.ideals.soil[0], 100, false)} style={{ width: plant.conditions.soilHealth + '%' }} />
                     </div>
                   </div>
@@ -771,7 +819,7 @@
                       <span className="flex items-center gap-1"><BugIcon /> BUG</span>
                       <span>{plant.conditions.infestation}%</span>
                     </div>
-                    <div className="w-full bg-black border-2 border-retro-border h-3">
+                    <div className="w-full bg-slate-200 dark:bg-black border-2 border-slate-600 dark:border-retro-border h-3">
                       <div className={'h-full ' + getBarColor(plant.conditions.infestation, 0, 15, true)} style={{ width: plant.conditions.infestation + '%' }} />
                     </div>
                   </div>
@@ -781,10 +829,10 @@
               {/* BOTTOM SECTION: Buttons & Controls */}
               <div className="shrink-0 space-y-2 pb-1">
                 
-                {/* 8-bit Toast Notification */}
+                {/* Toast Notification */}
                 <div className="h-6 flex items-center justify-center">
                   {toast && (
-                    <span className="text-[8px] text-black bg-retro-green px-2 py-1 border-2 border-white shadow-[2px_2px_0_0_#000]">
+                    <span className="text-[8px] text-black bg-emerald-400 dark:bg-retro-neonGreen px-2 py-1 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] font-bold">
                       {toast}
                     </span>
                   )}
@@ -792,19 +840,19 @@
 
                 {/* Main Actions */}
                 <div className="grid grid-cols-4 gap-2">
-                  <button onClick={() => applyCare('water')} disabled={plant.isDead} className="retro-btn bg-[#1d4ed8] text-white py-2 flex flex-col items-center">
+                  <button onClick={() => applyCare('water')} disabled={plant.isDead} className="retro-btn bg-blue-600 text-white py-2 flex flex-col items-center">
                     <DropletIcon />
                     <span className="text-[7px] mt-2">WATER</span>
                   </button>
-                  <button onClick={() => applyCare('fertilize')} disabled={plant.isDead} className="retro-btn bg-[#b45309] text-white py-2 flex flex-col items-center">
+                  <button onClick={() => applyCare('fertilize')} disabled={plant.isDead} className="retro-btn bg-amber-600 text-white py-2 flex flex-col items-center">
                     <ShovelIcon />
                     <span className="text-[7px] mt-2">FEED</span>
                   </button>
-                  <button onClick={() => applyCare('spray')} disabled={plant.isDead} className="retro-btn bg-[#be123c] text-white py-2 flex flex-col items-center">
+                  <button onClick={() => applyCare('spray')} disabled={plant.isDead} className="retro-btn bg-rose-600 text-white py-2 flex flex-col items-center">
                     <SprayIcon />
                     <span className="text-[7px] mt-2">SPRAY</span>
                   </button>
-                  <button onClick={() => applyCare('prune')} disabled={plant.isDead} className="retro-btn bg-[#047857] text-white py-2 flex flex-col items-center">
+                  <button onClick={() => applyCare('prune')} disabled={plant.isDead} className="retro-btn bg-emerald-600 text-white py-2 flex flex-col items-center">
                     <ScissorsIcon />
                     <span className="text-[7px] mt-2">PRUNE</span>
                   </button>
@@ -815,16 +863,16 @@
                   <div className="retro-panel p-2 flex items-center justify-between">
                     <span className="text-[8px] flex items-center gap-1"><SunIcon /> SUN</span>
                     <div className="flex gap-2">
-                      <button onClick={() => applyCare('sun_down')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">-</button>
-                      <button onClick={() => applyCare('sun_up')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">+</button>
+                      <button onClick={() => applyCare('sun_down')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">-</button>
+                      <button onClick={() => applyCare('sun_up')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">+</button>
                     </div>
                   </div>
 
                   <div className="retro-panel p-2 flex items-center justify-between">
                     <span className="text-[8px] flex items-center gap-1"><ThermometerIcon /> TMP</span>
                     <div className="flex gap-2">
-                      <button onClick={() => applyCare('temp_down')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">-</button>
-                      <button onClick={() => applyCare('temp_up')} disabled={plant.isDead} className="retro-btn bg-black text-white w-6 h-6 flex items-center justify-center text-[10px]">+</button>
+                      <button onClick={() => applyCare('temp_down')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">-</button>
+                      <button onClick={() => applyCare('temp_up')} disabled={plant.isDead} className="retro-btn bg-slate-200 dark:bg-black text-black dark:text-white w-6 h-6 flex items-center justify-center text-[10px] font-bold">+</button>
                     </div>
                   </div>
                 </div>
@@ -835,45 +883,45 @@
 
           {/* ======================= MODAL: TUTORIAL / HOW TO PLAY ======================= */}
           {tutorialOpen && (
-            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-              <div className="w-full max-w-xs retro-panel border-retro-yellow p-4 flex flex-col max-h-[90vh]">
-                <div className="text-center pb-2 mb-2 border-b-2 border-retro-border">
-                  <span className="text-[10px] text-retro-yellow">FIELD MANUAL</span>
+            <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+              <div className="w-full max-w-xs retro-panel border-amber-500 dark:border-retro-yellow p-4 flex flex-col max-h-[90vh]">
+                <div className="text-center pb-2 mb-2 border-b-2 border-slate-400 dark:border-retro-border">
+                  <span className="text-[10px] text-amber-600 dark:text-retro-yellow font-bold">FIELD MANUAL</span>
                 </div>
                 
-                <div className="overflow-y-auto space-y-3 text-[8px] pr-1 leading-relaxed text-slate-200">
+                <div className="overflow-y-auto space-y-3 text-[8px] pr-1 leading-relaxed text-slate-800 dark:text-slate-200">
                   <div>
-                    <span className="text-retro-green">1. STATUS METERS:</span>
-                    <p className="text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">1. STATUS METERS:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p>
                   </div>
 
                   <div>
-                    <span className="text-retro-green">2. CARE ACTIONS:</span>
-                    <p className="text-retro-border mt-0.5"><span className="text-white">WATER:</span> +Moisture</p>
-                    <p className="text-retro-border"><span className="text-white">FEED:</span> +Dirt nutrients</p>
-                    <p className="text-retro-border"><span className="text-white">SPRAY:</span> Clears bug swarms</p>
-                    <p className="text-retro-border"><span className="text-white">PRUNE:</span> Trims leaves for +HP</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">2. CARE ACTIONS:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5"><span className="text-black dark:text-white font-bold">WATER:</span> +Moisture</p>
+                    <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">FEED:</span> +Dirt nutrients</p>
+                    <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">SPRAY:</span> Clears bug swarms</p>
+                    <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">PRUNE:</span> Trims leaves for +HP</p>
                   </div>
 
                   <div>
-                    <span className="text-retro-green">3. CLIMATE DIALS:</span>
-                    <p className="text-retro-border mt-0.5">Use <span className="text-white">SUN (+/-)</span> and <span className="text-white">TMP (+/-)</span> buttons to balance the room environment.</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">3. CLIMATE DIALS:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Use <span className="text-black dark:text-white font-bold">SUN (+/-)</span> and <span className="text-black dark:text-white font-bold">TMP (+/-)</span> buttons to balance the room environment.</p>
                   </div>
 
                   <div>
-                    <span className="text-retro-green">4. MYSTERY SEEDS:</span>
-                    <p className="text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">4. MYSTERY SEEDS:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p>
                   </div>
 
                   <div>
-                    <span className="text-retro-green">5. HEALTH & BLOOM:</span>
-                    <p className="text-retro-border mt-0.5">Keep HP above 0. Healthy plants will sprout colorful flowers as they grow!</p>
+                    <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">5. HEALTH & BLOOM:</span>
+                    <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep HP above 0. Healthy plants will sprout colorful flowers as they grow!</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setTutorialOpen(false)}
-                  className="retro-btn w-full py-2.5 bg-retro-green text-black text-[8px] mt-4 font-bold"
+                  className="retro-btn w-full py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] mt-4 font-bold"
                 >
                   DISMISS
                 </button>
@@ -885,10 +933,10 @@
           {nameModal.open && (
             <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
               <div className="w-full max-w-xs retro-panel p-4">
-                <h3 className="text-[10px] text-white mb-2">
+                <h3 className="text-[10px] text-slate-900 dark:text-white mb-2">
                   {nameModal.isNew ? ('NEW FILE (SLOT ' + (nameModal.slotIndex + 1) + ')') : 'RENAME FILE'}
                 </h3>
-                <p className="text-[8px] text-retro-border mb-4 leading-relaxed">
+                <p className="text-[8px] text-slate-600 dark:text-retro-border mb-4 leading-relaxed">
                   ENTER DESIGNATION CODE:
                 </p>
                 <form onSubmit={(e) => { e.preventDefault(); handleSaveName(e.target.elements.slotInput.value); }}>
@@ -897,13 +945,13 @@
                     defaultValue={nameModal.currentName}
                     autoFocus
                     maxLength={12}
-                    className="w-full px-2 py-2 text-[10px] bg-black border-2 border-retro-border text-retro-green focus:outline-none focus:border-white mb-4 uppercase"
+                    className="w-full px-2 py-2 text-[10px] bg-slate-100 dark:bg-black border-2 border-slate-600 dark:border-retro-border text-emerald-700 dark:text-retro-neonGreen focus:outline-none focus:border-black dark:focus:border-white mb-4 uppercase font-bold"
                   />
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })} className="retro-btn flex-1 py-2 text-[8px] bg-black text-white">
+                    <button type="button" onClick={() => setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false })} className="retro-btn flex-1 py-2 text-[8px] bg-slate-200 dark:bg-black text-black dark:text-white">
                       CANCEL
                     </button>
-                    <button type="submit" className="retro-btn flex-1 py-2 text-[8px] bg-retro-green text-black">
+                    <button type="submit" className="retro-btn flex-1 py-2 text-[8px] bg-emerald-500 dark:bg-retro-neonGreen text-black font-bold">
                       ACCEPT
                     </button>
                   </div>
@@ -915,32 +963,32 @@
           {/* ======================= MODAL: SPECIES DISCOVERY ======================= */}
           {revealModal.open && revealModal.plantType && PLANT_ARCHETYPES[revealModal.plantType] && (
             <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-              <div className="w-full max-w-xs retro-panel border-retro-green p-5 text-center">
+              <div className="w-full max-w-xs retro-panel border-emerald-500 dark:border-retro-neonGreen p-5 text-center">
                 
                 <div className="mb-4 animate-pulse">
-                  <span className="text-[10px] text-black bg-retro-green px-2 py-1">SPECIES IDENTIFIED!</span>
+                  <span className="text-[10px] text-black bg-emerald-400 dark:bg-retro-neonGreen px-2 py-1 font-bold">SPECIES IDENTIFIED!</span>
                 </div>
 
-                <h2 className="text-sm text-white mb-2">
+                <h2 className="text-sm text-slate-900 dark:text-white mb-2">
                   {PLANT_ARCHETYPES[revealModal.plantType].name}
                 </h2>
 
-                <p className="text-[8px] text-retro-border mb-4 leading-loose">
+                <p className="text-[8px] text-slate-600 dark:text-retro-border mb-4 leading-loose">
                   {PLANT_ARCHETYPES[revealModal.plantType].tagline}
                 </p>
 
-                <div className="bg-black border-2 border-retro-border p-3 text-left text-[8px] space-y-2 mb-6">
+                <div className="bg-slate-100 dark:bg-black border-2 border-slate-600 dark:border-retro-border p-3 text-left text-[8px] space-y-2 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-retro-border">IDEAL H2O:</span>
-                    <span className="text-retro-blue">{PLANT_ARCHETYPES[revealModal.plantType].moisture[0]}-{PLANT_ARCHETYPES[revealModal.plantType].moisture[1]}%</span>
+                    <span className="text-slate-600 dark:text-retro-border">IDEAL H2O:</span>
+                    <span className="text-blue-600 dark:text-retro-blue font-bold">{PLANT_ARCHETYPES[revealModal.plantType].moisture[0]}-{PLANT_ARCHETYPES[revealModal.plantType].moisture[1]}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-retro-border">IDEAL SUN:</span>
-                    <span className="text-retro-yellow">{PLANT_ARCHETYPES[revealModal.plantType].sunlight[0]}-{PLANT_ARCHETYPES[revealModal.plantType].sunlight[1]}%</span>
+                    <span className="text-slate-600 dark:text-retro-border">IDEAL SUN:</span>
+                    <span className="text-amber-600 dark:text-retro-yellow font-bold">{PLANT_ARCHETYPES[revealModal.plantType].sunlight[0]}-{PLANT_ARCHETYPES[revealModal.plantType].sunlight[1]}%</span>
                   </div>
                 </div>
 
-                <button onClick={() => setRevealModal({ open: false, plantType: null })} className="retro-btn w-full py-3 bg-retro-green text-black text-[8px]">
+                <button onClick={() => setRevealModal({ open: false, plantType: null })} className="retro-btn w-full py-3 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] font-bold">
                   CONTINUE
                 </button>
               </div>
