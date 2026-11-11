@@ -240,6 +240,7 @@
       const [toast, setToast] = useState('');
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
+      const [tutorialOpen, setTutorialOpen] = useState(false);
 
       useEffect(() => {
         if (!plant) return;
@@ -260,7 +261,7 @@
 
       // Game Loop
       useEffect(() => {
-        if (screen !== 'game' || !plant || plant.isDead || revealModal.open) return;
+        if (screen !== 'game' || !plant || plant.isDead || revealModal.open || tutorialOpen) return;
 
         const interval = setInterval(() => {
           setPlant(prev => {
@@ -345,7 +346,7 @@
         }, 3000);
 
         return () => clearInterval(interval);
-      }, [screen, plant ? plant.isDead : false, revealModal.open]);
+      }, [screen, plant ? plant.isDead : false, revealModal.open, tutorialOpen]);
 
       const applyCare = (action) => {
         if (!plant || plant.isDead) return;
@@ -509,6 +510,12 @@
             <div className="h-full flex flex-col justify-between py-2">
               <div className="flex justify-between items-center px-1 py-1">
                 <span className="text-[10px] text-retro-green">POCKET GARDEN</span>
+                <button
+                  onClick={() => setTutorialOpen(true)}
+                  className="retro-btn bg-black text-retro-yellow px-2 py-1 text-[8px] hover:text-white"
+                >
+                  ? GUIDE
+                </button>
               </div>
 
               <div className="flex flex-col items-center my-auto text-center px-4">
@@ -581,11 +588,20 @@
               {/* TOP SECTION: Header & Stats */}
               <div className="shrink-0 space-y-2 pb-1">
                 <div className="flex items-center justify-between py-1 border-b-4 border-retro-panel">
-                  <button onClick={() => setScreen('home')} className="retro-btn bg-retro-panel text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
-                    <ArrowLeftIcon /> BACK
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => setScreen('home')} className="retro-btn bg-retro-panel text-white px-2 py-1.5 text-[8px] flex items-center gap-1">
+                      <ArrowLeftIcon /> BACK
+                    </button>
+                    <button
+                      onClick={() => setTutorialOpen(true)}
+                      className="retro-btn bg-black text-retro-yellow px-2 py-1.5 text-[8px]"
+                      title="Guide"
+                    >
+                      ?
+                    </button>
+                  </div>
 
-                  <div className="flex items-center gap-2 max-w-[140px] truncate">
+                  <div className="flex items-center gap-2 max-w-[130px] truncate">
                     <span className="text-[10px] text-retro-blue truncate">{plant.slotName}</span>
                     <button onClick={() => editSlotNamePrompt(activeSlot)} className="text-retro-border hover:text-white"><PencilIcon /></button>
                   </div>
@@ -702,7 +718,7 @@
                       )}
                     </g>
 
-                    {/* Pot & Soil (Anchored statically outside the bop animation) */}
+                    {/* Pot & Soil */}
                     <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
                     <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor} stroke="#000" strokeWidth="2" />
                   </svg>
@@ -814,6 +830,54 @@
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* ======================= MODAL: TUTORIAL / HOW TO PLAY ======================= */}
+          {tutorialOpen && (
+            <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+              <div className="w-full max-w-xs retro-panel border-retro-yellow p-4 flex flex-col max-h-[90vh]">
+                <div className="text-center pb-2 mb-2 border-b-2 border-retro-border">
+                  <span className="text-[10px] text-retro-yellow">FIELD MANUAL</span>
+                </div>
+                
+                <div className="overflow-y-auto space-y-3 text-[8px] pr-1 leading-relaxed text-slate-200">
+                  <div>
+                    <span className="text-retro-green">1. STATUS METERS:</span>
+                    <p className="text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p>
+                  </div>
+
+                  <div>
+                    <span className="text-retro-green">2. CARE ACTIONS:</span>
+                    <p className="text-retro-border mt-0.5"><span className="text-white">WATER:</span> +Moisture</p>
+                    <p className="text-retro-border"><span className="text-white">FEED:</span> +Dirt nutrients</p>
+                    <p className="text-retro-border"><span className="text-white">SPRAY:</span> Clears bug swarms</p>
+                    <p className="text-retro-border"><span className="text-white">PRUNE:</span> Trims leaves for +HP</p>
+                  </div>
+
+                  <div>
+                    <span className="text-retro-green">3. CLIMATE DIALS:</span>
+                    <p className="text-retro-border mt-0.5">Use <span className="text-white">SUN (+/-)</span> and <span className="text-white">TMP (+/-)</span> buttons to balance the room environment.</p>
+                  </div>
+
+                  <div>
+                    <span className="text-retro-green">4. MYSTERY SEEDS:</span>
+                    <p className="text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p>
+                  </div>
+
+                  <div>
+                    <span className="text-retro-green">5. HEALTH & BLOOM:</span>
+                    <p className="text-retro-border mt-0.5">Keep HP above 0. Healthy plants will sprout colorful flowers as they grow!</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setTutorialOpen(false)}
+                  className="retro-btn w-full py-2.5 bg-retro-green text-black text-[8px] mt-4 font-bold"
+                >
+                  DISMISS
+                </button>
+              </div>
             </div>
           )}
 
