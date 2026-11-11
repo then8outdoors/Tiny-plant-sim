@@ -47,7 +47,6 @@
     .retro-btn:disabled { opacity: 0.5; box-shadow: 1px 1px 0px 0px #000; transform: translate(2px, 2px); }
     svg.pixelated { shape-rendering: crispEdges; }
     
-    /* Sunroom Glass Grid Effect */
     .greenhouse-grid {
       background-image: 
         linear-gradient(rgba(255, 255, 255, 0.1) 2px, transparent 2px),
@@ -74,6 +73,19 @@
       snake: { name: 'VIPER BLADE', tagline: 'THRIVES ON NEGLECT.', moisture: [5, 30], sunlight: [10, 80], temp: [55, 95], soil: [20, 90], color: '#fef08a', leafColor: '#15803d' },
       spider: { name: 'CREEP VINE', tagline: 'GROWS FAST, EASY CARE.', moisture: [40, 70], sunlight: [30, 70], temp: [60, 80], soil: [40, 80], color: '#a3e635', leafColor: '#4d7c0f' },
       money: { name: 'COIN TREE', tagline: 'BRINGS GOOD LUCK.', moisture: [30, 60], sunlight: [40, 70], temp: [65, 85], soil: [50, 80], color: '#92400e', leafColor: '#10b981' }
+    };
+
+    // Safe lookup helper to prevent crashes from old/corrupt saves
+    const getArch = (type) => PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy'];
+
+    const safeParse = (key, fallback) => {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        console.warn(`Data format error for ${key}, falling back to defaults.`);
+        return fallback;
+      }
     };
 
     function generateNewPlant(slotNum, customName) {
@@ -109,13 +121,18 @@
     const ArrowLeftIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>;
     const TrashIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>;
 
-    // Plant Renderer Component (Reused in game and sunroom)
     const PlantVisual = ({ plant, isBlooming, soilBaseY = 168, scale = 1 }) => {
-      const arch = PLANT_ARCHETYPES[plant.type];
-      const body = plant.isDead ? '#555' : plant.health < 35 && plant.conditions.moisture < plant.ideals.moisture[0] ? '#d97706' : plant.health < 35 && plant.conditions.moisture > plant.ideals.moisture[1] ? '#064e3b' : arch.color;
-      const leaf = plant.isDead ? '#444' : plant.health < 35 && plant.conditions.moisture < plant.ideals.moisture[0] ? '#f59e0b' : plant.health < 35 && plant.conditions.moisture > plant.ideals.moisture[1] ? '#047857' : arch.leafColor;
+      const arch = getArch(plant.type);
+      const conds = plant.conditions || {};
+      const ideals = plant.ideals || { moisture: [0, 100] };
+      const moisture = conds.moisture || 50;
+      const mMin = ideals.moisture?.[0] || 0;
+      const mMax = ideals.moisture?.[1] || 100;
       
-      const growthProgress = Math.min(plant.age / 18, 1);
+      const body = plant.isDead ? '#555' : plant.health < 35 && moisture < mMin ? '#d97706' : plant.health < 35 && moisture > mMax ? '#064e3b' : arch.color;
+      const leaf = plant.isDead ? '#444' : plant.health < 35 && moisture < mMin ? '#f59e0b' : plant.health < 35 && moisture > mMax ? '#047857' : arch.leafColor;
+      
+      const growthProgress = Math.min((plant.age || 1) / 18, 1);
       const plantHeight = 24 + growthProgress * 70;
       const stemTopY = soilBaseY - plantHeight;
       const strokeW = 4;
@@ -123,15 +140,13 @@
       return (
         <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
           <g transform={`scale(${scale}) translate(${100 * (1 - scale)}, ${215 * (1 - scale)})`}>
-            {/* Infestation bugs */}
-            {plant.conditions?.infestation > 10 && (
+            {conds.infestation > 10 && (
               <g fill="#ff003c" className="animate-retro-bop">
                 <rect x="85" y={soilBaseY - 30} width="4" height="4" /><rect x="115" y={soilBaseY - 45} width="4" height="4" />
                 <rect x="102" y={soilBaseY - 60} width="4" height="4" /><rect x="75" y={soilBaseY - 15} width="4" height="4" />
               </g>
             )}
 
-            {/* Plant Structure - Wrapped in Bop Animation */}
             <g className={plant.isDead ? "" : "animate-retro-bop origin-bottom"}>
               {plant.isDead ? (
                 <g stroke="#555" strokeWidth="6" fill="none">
@@ -179,7 +194,6 @@
                 <g>
                   <polyline points={`100,${soilBaseY} 80,${stemTopY+20} 60,${stemTopY}`} stroke={leaf} strokeWidth="4" fill="none"/>
                   <polyline points={`100,${soilBaseY} 120,${stemTopY+20} 140,${stemTopY}`} stroke={leaf} strokeWidth="4" fill="none"/>
-                  {/* Traps */}
                   <polygon points={`50,${stemTopY} 70,${stemTopY} 60,${stemTopY+15}`} fill={body} />
                   <polygon points={`130,${stemTopY} 150,${stemTopY} 140,${stemTopY+15}`} fill={body} />
                   <polyline points={`50,${stemTopY} 55,${stemTopY-10} 60,${stemTopY} 65,${stemTopY-10} 70,${stemTopY}`} stroke="#fff" fill="none" />
@@ -196,7 +210,6 @@
                   <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={leaf} strokeWidth="4" />
                   <polyline points={`100,${soilBaseY-10} 120,${soilBaseY-5}`} stroke={leaf} strokeWidth="6" fill="none"/>
                   <polyline points={`100,${soilBaseY-15} 80,${soilBaseY-10}`} stroke={leaf} strokeWidth="6" fill="none"/>
-                  {/* Blooms */}
                   <rect x="90" y={stemTopY} width="20" height="20" fill={body} />
                   <rect x="95" y={stemTopY+5} width="10" height="10" fill="#fff" />
                   {isBlooming && <rect x="90" y={stemTopY+30} width="20" height="20" fill={body} />}
@@ -243,10 +256,8 @@
                 </g>
               )}
             </g>
-
-            {/* Blocky Pot (Static) */}
             <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
-            <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor} stroke="#000" strokeWidth="2" />
+            <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor || '#ea580c'} stroke="#000" strokeWidth="2" />
           </g>
         </svg>
       );
@@ -255,8 +266,16 @@
     function App() {
       const [screen, setScreen] = useState('home');
       const [activeSlot, setActiveSlot] = useState(0);
-      const [slotsData, setSlotsData] = useState(() => [0, 1, 2].map(idx => JSON.parse(localStorage.getItem(`plant_slot_${idx}`))));
-      const [sunroomData, setSunroomData] = useState(() => JSON.parse(localStorage.getItem('plant_sunroom')) || []);
+      
+      const [slotsData, setSlotsData] = useState(() => {
+        return [0, 1, 2].map(idx => safeParse(`plant_slot_${idx}`, null));
+      });
+      
+      const [sunroomData, setSunroomData] = useState(() => {
+        const data = safeParse('plant_sunroom', []);
+        return Array.isArray(data) ? data : [];
+      });
+      
       const [plant, setPlant] = useState(null);
       const [toast, setToast] = useState('');
       
@@ -277,22 +296,35 @@
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2000); };
 
       useEffect(() => {
-        if (screen !== 'game' || !plant || plant.isDead || revealModal.open || tutorialOpen) return;
+        const isDead = plant ? plant.isDead : false;
+        if (screen !== 'game' || !plant || isDead || revealModal.open || tutorialOpen) return;
 
         const interval = setInterval(() => {
           setPlant(prev => {
             if (!prev || prev.isDead) return prev;
-            let { moisture, sunlight, temperature, soilHealth, infestation } = prev.conditions;
+            
+            const c = prev.conditions || {};
+            let moisture = c.moisture ?? 50;
+            let sunlight = c.sunlight ?? 50;
+            let temperature = c.temperature ?? 72;
+            let soilHealth = c.soilHealth ?? 85;
+            let infestation = c.infestation ?? 0;
+            
             let healthDelta = 0;
 
             const moistureDrain = 1.0 + (temperature > 80 ? 0.8 : 0) + (sunlight > 75 ? 0.6 : 0);
             moisture = Math.max(0, Math.min(100, moisture - moistureDrain));
             soilHealth = Math.max(0, Math.min(100, soilHealth - 0.25));
 
-            if (soilHealth < 40 || moisture > 85) if (Math.random() < 0.35) infestation = Math.min(100, infestation + 4);
+            if (soilHealth < 40 || moisture > 85) {
+              if (Math.random() < 0.35) infestation = Math.min(100, infestation + 4);
+            }
 
-            const [mMin, mMax] = prev.ideals.moisture; const [sMin, sMax] = prev.ideals.sunlight;
-            const [tMin, tMax] = prev.ideals.temp; const [soilMin] = prev.ideals.soil;
+            const idls = prev.ideals || {};
+            const [mMin = 0, mMax = 100] = idls.moisture || [0, 100];
+            const [sMin = 0, sMax = 100] = idls.sunlight || [0, 100];
+            const [tMin = 0, tMax = 100] = idls.temp || [0, 100];
+            const [soilMin = 0] = idls.soil || [0];
 
             if (moisture < mMin) healthDelta -= (mMin - moisture) * 0.15; else if (moisture > mMax) healthDelta -= (moisture - mMax) * 0.15; else healthDelta += 0.5;
             if (sunlight < sMin) healthDelta -= (sMin - sunlight) * 0.12; else if (sunlight > sMax) healthDelta -= (sunlight - sMax) * 0.12; else healthDelta += 0.4;
@@ -300,28 +332,53 @@
             if (soilHealth < soilMin) healthDelta -= 1.2;
             if (infestation > 15) healthDelta -= (infestation - 15) * 0.22;
 
-            const newHealth = Math.max(0, Math.min(100, prev.health + healthDelta));
-            const isDead = newHealth <= 0;
+            const newHealth = Math.max(0, Math.min(100, (prev.health ?? 100) + healthDelta));
+            const nowDead = newHealth <= 0;
 
-            let newAge = prev.age; let newlyRevealed = false; let newRevealedState = prev.revealed;
+            let newAge = prev.age ?? 1; 
+            let newlyRevealed = false; 
+            let newRevealedState = prev.revealed ?? false;
 
-            if (!isDead && newHealth > 40) {
-              newAge = +(prev.age + 0.15).toFixed(2);
-              if (!prev.revealed && newAge >= prev.revealAge) { newRevealedState = true; newlyRevealed = true; }
+            if (!nowDead && newHealth > 40) {
+              newAge = +(newAge + 0.15).toFixed(2);
+              if (!newRevealedState && newAge >= (prev.revealAge ?? 5)) { 
+                newRevealedState = true; newlyRevealed = true; 
+              }
             }
+            
             if (newlyRevealed) setRevealModal({ open: true, plantType: prev.type });
 
-            return { ...prev, age: newAge, health: Math.round(newHealth), revealed: newRevealedState, isDead, conditions: { moisture: Math.round(moisture), sunlight, temperature, soilHealth: Math.round(soilHealth), infestation: Math.round(infestation) } };
+            return { 
+              ...prev, 
+              age: newAge, 
+              health: Math.round(newHealth), 
+              revealed: newRevealedState, 
+              isDead: nowDead, 
+              conditions: { 
+                moisture: Math.round(moisture), 
+                sunlight, 
+                temperature, 
+                soilHealth: Math.round(soilHealth), 
+                infestation: Math.round(infestation) 
+              } 
+            };
           });
         }, 3000);
 
         return () => clearInterval(interval);
-      }, [screen, plant?.isDead, revealModal.open, tutorialOpen]);
+      }, [screen, plant ? plant.isDead : false, revealModal.open, tutorialOpen]);
 
       const applyCare = (action) => {
         if (!plant || plant.isDead) return;
         setPlant(prev => {
-          let c = { ...prev.conditions }; let h = prev.health;
+          let c = { ...(prev.conditions || {}) }; 
+          let h = prev.health ?? 100;
+          c.moisture = c.moisture ?? 50;
+          c.soilHealth = c.soilHealth ?? 85;
+          c.sunlight = c.sunlight ?? 50;
+          c.temperature = c.temperature ?? 72;
+          c.infestation = c.infestation ?? 0;
+
           switch (action) {
             case 'water': c.moisture = Math.min(100, c.moisture + 22); if (c.infestation > 0) c.infestation = Math.max(0, c.infestation - 4); showToast('+H2O'); break;
             case 'fertilize': c.soilHealth = Math.min(100, c.soilHealth + 26); showToast('+SOIL'); break;
@@ -348,7 +405,10 @@
           if (plant && activeSlot === nameModal.slotIndex) setPlant(prev => ({ ...prev, slotName: finalName }));
           setSlotsData(prev => {
             const next = [...prev];
-            if (next[nameModal.slotIndex]) { next[nameModal.slotIndex] = { ...next[nameModal.slotIndex], slotName: finalName }; localStorage.setItem(`plant_slot_${nameModal.slotIndex}`, JSON.stringify(next[nameModal.slotIndex])); }
+            if (next[nameModal.slotIndex]) { 
+              next[nameModal.slotIndex] = { ...next[nameModal.slotIndex], slotName: finalName }; 
+              localStorage.setItem(`plant_slot_${nameModal.slotIndex}`, JSON.stringify(next[nameModal.slotIndex])); 
+            }
             return next;
           });
           setNameModal({ open: false, slotIndex: 0, currentName: '', isNew: false });
@@ -404,8 +464,8 @@
                             <button onClick={() => setNameModal({ open: true, slotIndex: idx, currentName: data.slotName, isNew: false })} className="text-retro-border hover:text-white"><PencilIcon /></button>
                           </div>
                           <div className="flex flex-col gap-1 mt-2 text-[8px] text-retro-border">
-                            <span>{data.isDead ? 'WITHERED' : data.revealed ? PLANT_ARCHETYPES[data.type].name : 'MYSTERY SEED'}</span>
-                            <span>DAY {Math.floor(data.age)} • <span className={data.isDead ? 'text-retro-red' : 'text-retro-green'}>{data.isDead ? 'DEAD' : `${data.health}% HP`}</span></span>
+                            <span>{data.isDead ? 'WITHERED' : data.revealed ? getArch(data.type).name : 'MYSTERY SEED'}</span>
+                            <span>DAY {Math.floor(data.age || 1)} • <span className={data.isDead ? 'text-retro-red' : 'text-retro-green'}>{data.isDead ? 'DEAD' : `${data.health || 0}% HP`}</span></span>
                           </div>
                         </div>
                       ) : (
@@ -441,16 +501,16 @@
                 <div className="flex items-center justify-between py-1 border-b-4 border-retro-panel">
                   <button onClick={() => setScreen('home')} className="retro-btn bg-retro-panel text-white px-2 py-1.5 text-[8px] flex items-center gap-1"><ArrowLeftIcon /> BACK</button>
                   <div className="flex items-center gap-2 max-w-[120px] truncate">
-                    <span className="text-[10px] text-retro-blue truncate">{plant.slotName}</span>
+                    <span className="text-[10px] text-retro-blue truncate">{plant.slotName || 'PLANT'}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {canRetire && <button onClick={retirePlant} className="retro-btn bg-retro-yellow text-black px-1.5 py-1 text-[8px] animate-pulse">RETIRE</button>}
-                    <span className={`text-[10px] px-2 py-1 border-2 border-current bg-black ${plant.isDead ? 'text-retro-red' : plant.health > 70 ? 'text-retro-green' : 'text-retro-yellow'}`}>{plant.isDead ? 'DEAD' : `HP:${plant.health}`}</span>
+                    <span className={`text-[10px] px-2 py-1 border-2 border-current bg-black ${plant.isDead ? 'text-retro-red' : (plant.health || 0) > 70 ? 'text-retro-green' : 'text-retro-yellow'}`}>{plant.isDead ? 'DEAD' : `HP:${plant.health || 0}`}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center px-1 pt-1">
-                  <span className="text-[10px] text-white">{plant.isDead ? 'WITHERED' : plant.revealed ? PLANT_ARCHETYPES[plant.type].name : 'MYSTERY SEED'}</span>
-                  <span className="text-[10px] text-retro-border">DAY {Math.floor(plant.age)}</span>
+                  <span className="text-[10px] text-white">{plant.isDead ? 'WITHERED' : plant.revealed ? getArch(plant.type).name : 'MYSTERY SEED'}</span>
+                  <span className="text-[10px] text-retro-border">DAY {Math.floor(plant.age || 1)}</span>
                 </div>
               </div>
 
@@ -462,10 +522,16 @@
                 <div className="col-span-5 flex flex-col justify-between py-1 px-1">
                   {['moisture', 'sunlight', 'temperature', 'soilHealth', 'infestation'].map((cond, i) => {
                     const labels = ['H2O', 'SUN', 'TMP', 'DIRT', 'BUG'];
-                    const icons = [<DropletIcon/>, <SunIcon/>, <ThermometerIcon/>, <ShovelIcon/>, <BugIcon/>];
-                    const val = plant.conditions[cond];
-                    const range = cond === 'infestation' ? [0,15] : plant.ideals[cond === 'temperature' ? 'temp' : cond === 'soilHealth' ? 'soil' : cond];
+                    const icons = [<DropletIcon key="d"/>, <SunIcon key="s"/>, <ThermometerIcon key="t"/>, <ShovelIcon key="sh"/>, <BugIcon key="b"/>];
+                    
+                    const c = plant.conditions || {};
+                    const idls = plant.ideals || { moisture: [0, 100], sunlight: [0, 100], temp: [0, 100], soil: [0, 100] };
+                    const val = c[cond] ?? (cond === 'infestation' ? 0 : 50);
+                    
+                    const lookup = cond === 'temperature' ? 'temp' : cond === 'soilHealth' ? 'soil' : cond;
+                    const range = cond === 'infestation' ? [0, 15] : (idls[lookup] || [0, 100]);
                     const barW = cond === 'temperature' ? Math.min(100, Math.max(0, (val - 40) * 1.5)) : val;
+                    
                     return (
                       <div key={cond}>
                         <div className="flex justify-between items-center text-[8px] mb-1">
@@ -529,9 +595,9 @@
                         <PlantVisual plant={sp} isBlooming={true} scale={0.45} soilBaseY={200} />
                       </div>
                       <div className="text-center w-full bg-[#1f2937] p-1 border-t-2 border-[#8b5cf6]">
-                        <div className="text-[6px] text-retro-blue truncate mb-1">{sp.slotName}</div>
-                        <div className="text-[6px] text-retro-border truncate">{PLANT_ARCHETYPES[sp.type].name}</div>
-                        <div className="text-[6px] text-retro-green mt-1">DAY {Math.floor(sp.age)}</div>
+                        <div className="text-[6px] text-retro-blue truncate mb-1">{sp.slotName || 'PLANT'}</div>
+                        <div className="text-[6px] text-retro-border truncate">{getArch(sp.type).name}</div>
+                        <div className="text-[6px] text-retro-green mt-1">DAY {Math.floor(sp.age || 1)}</div>
                       </div>
                     </div>
                   ))}
@@ -581,11 +647,11 @@
             <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
               <div className="w-full max-w-xs retro-panel border-retro-green p-5 text-center">
                 <div className="mb-4 animate-pulse"><span className="text-[10px] text-black bg-retro-green px-2 py-1">SPECIES IDENTIFIED!</span></div>
-                <h2 className="text-sm text-white mb-2">{PLANT_ARCHETYPES[revealModal.plantType].name}</h2>
-                <p className="text-[8px] text-retro-border mb-4 leading-loose">{PLANT_ARCHETYPES[revealModal.plantType].tagline}</p>
+                <h2 className="text-sm text-white mb-2">{getArch(revealModal.plantType).name}</h2>
+                <p className="text-[8px] text-retro-border mb-4 leading-loose">{getArch(revealModal.plantType).tagline}</p>
                 <div className="bg-black border-2 border-retro-border p-3 text-left text-[8px] space-y-2 mb-6">
-                  <div className="flex justify-between"><span className="text-retro-border">IDEAL H2O:</span><span className="text-retro-blue">{PLANT_ARCHETYPES[revealModal.plantType].moisture[0]}-{PLANT_ARCHETYPES[revealModal.plantType].moisture[1]}%</span></div>
-                  <div className="flex justify-between"><span className="text-retro-border">IDEAL SUN:</span><span className="text-retro-yellow">{PLANT_ARCHETYPES[revealModal.plantType].sunlight[0]}-{PLANT_ARCHETYPES[revealModal.plantType].sunlight[1]}%</span></div>
+                  <div className="flex justify-between"><span className="text-retro-border">IDEAL H2O:</span><span className="text-retro-blue">{getArch(revealModal.plantType).moisture[0]}-{getArch(revealModal.plantType).moisture[1]}%</span></div>
+                  <div className="flex justify-between"><span className="text-retro-border">IDEAL SUN:</span><span className="text-retro-yellow">{getArch(revealModal.plantType).sunlight[0]}-{getArch(revealModal.plantType).sunlight[1]}%</span></div>
                 </div>
                 <button onClick={() => setRevealModal({ open: false, plantType: null })} className="retro-btn w-full py-3 bg-retro-green text-black text-[8px]">CONTINUE</button>
               </div>
