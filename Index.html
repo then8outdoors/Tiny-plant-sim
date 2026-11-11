@@ -17,7 +17,9 @@
         extend: {
           fontFamily: { sans: ['"Press Start 2P"', 'monospace'] },
           colors: {
-            retro: { bg: '#111827', panel: '#1f2937', green: '#16a34a', neonGreen: '#39ff14', red: '#ff003c', yellow: '#ffea00', blue: '#00f0ff', border: '#94a3b8' }
+            retro: {
+              bg: '#111827', panel: '#1f2937', green: '#16a34a', neonGreen: '#39ff14', red: '#ff003c', yellow: '#ffea00', blue: '#00f0ff', border: '#94a3b8'
+            }
           }
         }
       }
@@ -77,6 +79,7 @@
     };
 
     function getArch(type) { return PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy']; }
+    
     function safeLoadSlot(slotIdx) {
       try {
         const raw = localStorage.getItem('plant_slot_' + slotIdx);
@@ -127,6 +130,7 @@
     const ArrowLeftIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>;
     const TrashIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>;
 
+    // Core Plant Vector Generator
     const PlantVisual = ({ plant, isBlooming, soilBaseY = 168, scale = 1 }) => {
       if (!plant) return null;
       const arch = getArch(plant.type);
@@ -255,7 +259,7 @@
                 </g>
               ) : (
                 <g>
-                  <g fill={leafCol} stroke={colors.stroke || '#000'} strokeWidth="2">
+                  <g fill={leafCol} stroke="#000" strokeWidth="2">
                     <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} strokeWidth="4" />
                     <polygon points={`100,${soilBaseY - plantHeight * 0.4} 70,${soilBaseY - plantHeight * 0.5} 62,${soilBaseY - plantHeight * 0.35} 80,${soilBaseY - plantHeight * 0.28}`} />
                     <polygon points={`100,${soilBaseY - plantHeight * 0.65} 130,${soilBaseY - plantHeight * 0.75} 138,${soilBaseY - plantHeight * 0.6} 120,${soilBaseY - plantHeight * 0.52}`} />
@@ -272,18 +276,20 @@
       );
     };
 
-    // Sunroom Scene Layout Positions
-    // 3 shelves total: Floor, Middle Shelf, High Shelf
-    const SUNROOM_POSITIONS = [
-      { bottom: '2%', left: '4%', scale: 0.65, zIndex: 30 },
-      { bottom: '2%', left: '35%', scale: 0.65, zIndex: 30 },
-      { bottom: '2%', left: '66%', scale: 0.65, zIndex: 30 },
-      { bottom: '33%', left: '8%', scale: 0.5, zIndex: 20 },
-      { bottom: '33%', left: '38%', scale: 0.5, zIndex: 20 },
-      { bottom: '33%', left: '68%', scale: 0.5, zIndex: 20 },
-      { bottom: '63%', left: '12%', scale: 0.35, zIndex: 10 },
-      { bottom: '63%', left: '41%', scale: 0.35, zIndex: 10 },
-      { bottom: '63%', left: '70%', scale: 0.35, zIndex: 10 }
+    // Explicit 8-bit Shelving Coordinates
+    // Spot 0, 1, 2 = Upper Hanging Shelf (Y=195)
+    // Spot 3, 4, 5 = Middle Window Ledge (Y=375)
+    // Spot 6, 7, 8 = Sunroom Floor (Y=545)
+    const SCENE_SPOTS = [
+      { x: 60,  y: 195, scale: 0.35 },
+      { x: 180, y: 195, scale: 0.35 },
+      { x: 300, y: 195, scale: 0.35 },
+      { x: 65,  y: 375, scale: 0.48 },
+      { x: 180, y: 375, scale: 0.48 },
+      { x: 295, y: 375, scale: 0.48 },
+      { x: 70,  y: 545, scale: 0.62 },
+      { x: 180, y: 545, scale: 0.62 },
+      { x: 290, y: 545, scale: 0.62 }
     ];
 
     function App() {
@@ -304,6 +310,7 @@
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
       const [tutorialOpen, setTutorialOpen] = useState(false);
+      const [inspectedPlant, setInspectedPlant] = useState(null);
       
       const [darkMode, setDarkMode] = useState(() => {
         try { return localStorage.getItem('plant_dark_mode') !== 'false'; } catch (e) { return true; }
@@ -588,61 +595,223 @@
             </div>
           )}
 
-          {/* ======================= SCREEN 3: FULL SCREEN SUNROOM SCENE ======================= */}
+          {/* ======================= SCREEN 3: 8-BIT SCENE SUNROOM ======================= */}
           {screen === 'sunroom' && (
-            <div className="h-full flex flex-col relative overflow-hidden bg-sky-200 dark:bg-slate-900 border-4 border-slate-700 dark:border-retro-border">
+            <div className="h-full flex flex-col relative overflow-hidden bg-black border-4 border-slate-700 dark:border-retro-border">
               
-              {/* Back Button Overlay */}
-              <div className="absolute top-2 left-2 z-50">
+              {/* Back & Info Bar */}
+              <div className="absolute top-2 left-2 z-50 flex items-center gap-2">
                 <button onClick={() => setScreen('home')} className="retro-btn bg-white dark:bg-retro-panel text-slate-900 dark:text-white px-2 py-1.5 text-[8px] flex items-center gap-1 font-bold">
                   <ArrowLeftIcon /> BACK
                 </button>
+                <span className="text-[8px] bg-black/80 px-2 py-1 text-retro-yellow font-bold border border-retro-yellow/40">
+                  {sunroomData.length}/9 RETIRED
+                </span>
               </div>
 
-              {/* Pure SVG Background Scene */}
-              <svg className="absolute inset-0 w-full h-full pixelated pointer-events-none" preserveAspectRatio="none">
-                {/* Back Wall / Wallpaper */}
-                <rect width="100%" height="100%" fill="currentColor" className="text-slate-100 dark:text-slate-800" />
-                
-                {/* Big Glass Windows looking outside */}
-                <rect x="5%" y="10%" width="40%" height="80%" fill="currentColor" className="text-sky-300 dark:text-slate-950" stroke="currentColor" strokeWidth="4" />
-                <rect x="55%" y="10%" width="40%" height="80%" fill="currentColor" className="text-sky-300 dark:text-slate-950" stroke="currentColor" strokeWidth="4" />
-                
-                {/* Sun / Moon in window */}
-                <rect x="15%" y="15%" width="8%" height="6%" fill="currentColor" className="text-yellow-300 dark:text-slate-700" />
-                
-                {/* Wooden Shelves Bridging across the windows */}
-                <rect x="0" y="32%" width="100%" height="4%" fill="currentColor" className="text-amber-800 dark:text-slate-700" stroke="#000" strokeWidth="2" />
-                <rect x="0" y="62%" width="100%" height="4%" fill="currentColor" className="text-amber-800 dark:text-slate-700" stroke="#000" strokeWidth="2" />
-                
-                {/* Wooden Floor */}
-                <polygon points="0,85% 100%,85% 100%,100% 0,100%" fill="currentColor" className="text-amber-900 dark:text-slate-800" stroke="#000" strokeWidth="2" />
-                <line x1="0" y1="90%" x2="100%" y2="90%" stroke="#000" strokeWidth="2" opacity="0.3" />
-                <line x1="0" y1="95%" x2="100%" y2="95%" stroke="#000" strokeWidth="2" opacity="0.3" />
-              </svg>
+              {/* Pixel Art Scene Container */}
+              <svg viewBox="0 0 360 600" className="w-full h-full pixelated select-none" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  {/* Sunset Sky Gradient */}
+                  <linearGradient id="sunsetSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#bed5b8" />
+                    <stop offset="35%" stopColor="#dbe4bd" />
+                    <stop offset="60%" stopColor="#f7cf88" />
+                    <stop offset="85%" stopColor="#f39c5b" />
+                    <stop offset="100%" stopColor="#e57a3e" />
+                  </linearGradient>
 
-              {/* Map Plants into specific absolute coordinates */}
-              <div className="absolute inset-0 z-10">
-                {sunroomData.map((sp, i) => {
-                  if (i >= 9) return null;
-                  const pos = SUNROOM_POSITIONS[i];
+                  {/* Pixelated Window Dither Pattern */}
+                  <pattern id="pixelDither" width="4" height="4" patternUnits="userSpaceOnUse">
+                    <rect width="2" height="2" fill="#243f48" />
+                    <rect x="2" y="2" width="2" height="2" fill="#243f48" />
+                  </pattern>
+                </defs>
+
+                {/* 1. SKY BACKGROUND */}
+                <rect x="0" y="0" width="360" height="420" fill="url(#sunsetSky)" />
+
+                {/* Horizontal Atmospheric Cloud Bands */}
+                <rect x="0" y="45" width="160" height="4" fill="#a8c6a0" opacity="0.6" />
+                <rect x="220" y="35" width="140" height="4" fill="#a8c6a0" opacity="0.6" />
+                <rect x="40" y="75" width="200" height="5" fill="#cddcb8" opacity="0.5" />
+                <rect x="180" y="110" width="180" height="6" fill="#fbe1a7" opacity="0.7" />
+                <rect x="10" y="145" width="150" height="5" fill="#fbe1a7" opacity="0.7" />
+                <rect x="120" y="175" width="220" height="6" fill="#f7b77f" opacity="0.6" />
+                <rect x="0" y="210" width="180" height="5" fill="#f19456" opacity="0.6" />
+
+                {/* 2. DISTANT AMBER SKYLINE (Golden Silhouettes) */}
+                <g fill="#e09051">
+                  <rect x="20" y="260" width="35" height="100" />
+                  <rect x="65" y="240" width="28" height="120" />
+                  <polygon points="79,225 74,240 84,240" />
+                  <rect x="105" y="270" width="40" height="90" />
+                  <rect x="160" y="235" width="30" height="130" />
+                  <rect x="200" y="255" width="45" height="105" />
+                  <rect x="260" y="230" width="38" height="130" />
+                  <polygon points="279,212 274,230 284,230" />
+                  <rect x="310" y="250" width="40" height="110" />
+                </g>
+
+                {/* 3. TELEGRAPH WIRES & BIRDS (HOMAGE TO ATTACHED IMAGE) */}
+                <line x1="0" y1="130" x2="360" y2="130" stroke="#1c2d35" strokeWidth="2" />
+                <line x1="0" y1="148" x2="360" y2="148" stroke="#1c2d35" strokeWidth="2" />
+                <line x1="0" y1="215" x2="360" y2="215" stroke="#1c2d35" strokeWidth="2" />
+
+                {/* Bird 1 (Left on Wire) */}
+                <g transform="translate(110, 114)">
+                  <polygon points="12,0 18,2 20,6 16,10 6,14 0,16 6,10 8,4" fill="#355c68" />
+                  <rect x="14" y="2" width="2" height="2" fill="#fef08a" />
+                  <polygon points="8,6 14,6 12,12 4,14" fill="#78350f" />
+                  <line x1="10" y1="14" x2="10" y2="16" stroke="#000" strokeWidth="2" />
+                  <line x1="14" y1="14" x2="14" y2="16" stroke="#000" strokeWidth="2" />
+                </g>
+
+                {/* Bird 2 (Right on Wire) */}
+                <g transform="translate(225, 114)">
+                  <polygon points="12,0 18,2 20,6 16,10 6,14 0,16 6,10 8,4" fill="#355c68" />
+                  <rect x="14" y="2" width="2" height="2" fill="#fef08a" />
+                  <polygon points="8,6 14,6 12,12 4,14" fill="#78350f" />
+                  <line x1="10" y1="14" x2="10" y2="16" stroke="#000" strokeWidth="2" />
+                  <line x1="14" y1="14" x2="14" y2="16" stroke="#000" strokeWidth="2" />
+                </g>
+
+                {/* 4. MID-GROUND TEAL BUILDINGS WITH LIT PIXEL WINDOWS */}
+                <g fill="#2d4a54">
+                  <rect x="0" y="280" width="75" height="100" />
+                  <rect x="70" y="295" width="85" height="85" />
+                  <rect x="150" y="275" width="95" height="105" />
+                  <rect x="240" y="290" width="80" height="90" />
+                  <rect x="315" y="270" width="45" height="110" />
+
+                  {/* Antenna masts */}
+                  <line x1="45" y1="250" x2="45" y2="280" stroke="#1a2d33" strokeWidth="2" />
+                  <line x1="175" y1="240" x2="175" y2="275" stroke="#1a2d33" strokeWidth="2" />
+                  <line x1="171" y1="250" x2="179" y2="250" stroke="#1a2d33" strokeWidth="2" />
+
+                  {/* Glowing Pixel Windows */}
+                  <g fill="#fef08a">
+                    <rect x="15" y="295" width="8" height="10" />
+                    <rect x="35" y="295" width="8" height="10" />
+                    <rect x="15" y="320" width="8" height="10" />
+                    <rect x="95" y="315" width="10" height="12" />
+                    <rect x="115" y="315" width="10" height="12" />
+                    <rect x="175" y="290" width="9" height="11" />
+                    <rect x="205" y="290" width="9" height="11" />
+                    <rect x="175" y="315" width="9" height="11" />
+                    <rect x="270" y="305" width="9" height="12" />
+                    <rect x="330" y="290" width="8" height="10" />
+                  </g>
+                </g>
+
+                {/* Dither Texture on Rooftops */}
+                <rect x="0" y="340" width="360" height="30" fill="url(#pixelDither)" opacity="0.3" />
+
+                {/* 5. INTERIOR SUNROOM STRUCTURE */}
+                
+                {/* Side Walls (Interior Frame) */}
+                <rect x="0" y="0" width="14" height="600" fill="#1e1814" />
+                <rect x="346" y="0" width="14" height="600" fill="#1e1814" />
+                <rect x="0" y="0" width="360" height="16" fill="#1e1814" />
+
+                {/* Vertical Window Mullions */}
+                <rect x="118" y="16" width="6" height="350" fill="#2d2119" stroke="#000" strokeWidth="1" />
+                <rect x="236" y="16" width="6" height="350" fill="#2d2119" stroke="#000" strokeWidth="1" />
+
+                {/* SHELF 1: TOP HANGING SHELF (Tied into mullions) */}
+                <g>
+                  {/* Metal Shelf Brackets */}
+                  <rect x="40" y="196" width="6" height="12" fill="#000" />
+                  <rect x="160" y="196" width="6" height="12" fill="#000" />
+                  <rect x="280" y="196" width="6" height="12" fill="#000" />
+                  {/* Heavy Wooden Shelf Plank */}
+                  <rect x="14" y="192" width="332" height="7" fill="#5c381e" stroke="#000" strokeWidth="1" />
+                  <rect x="14" y="192" width="332" height="2" fill="#8b572a" />
+                </g>
+
+                {/* SHELF 2: WIDE WINDOW LEDGE / SILL */}
+                <g>
+                  <rect x="0" y="366" width="360" height="14" fill="#4a2e18" stroke="#000" strokeWidth="2" />
+                  <rect x="0" y="366" width="360" height="3" fill="#7a4f2b" />
+                  {/* Ledge Support Corbel Blocks */}
+                  <rect x="30" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
+                  <rect x="150" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
+                  <rect x="270" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
+                </g>
+
+                {/* Lower Interior Wall below Window */}
+                <rect x="0" y="380" width="360" height="160" fill="#2d2621" />
+                {/* Brickwork Texture on Lower Wall */}
+                <g stroke="#1b1714" strokeWidth="2" opacity="0.5">
+                  <line x1="0" y1="410" x2="360" y2="410" />
+                  <line x1="0" y1="440" x2="360" y2="440" />
+                  <line x1="0" y1="470" x2="360" y2="470" />
+                  <line x1="0" y1="500" x2="360" y2="500" />
+                  <line x1="0" y1="530" x2="360" y2="530" />
+                </g>
+
+                {/* SHELF 3: TERRACOTTA TILED SUNROOM FLOOR */}
+                <g>
+                  <polygon points="0,535 360,535 360,600 0,600" fill="#783516" stroke="#000" strokeWidth="2" />
+                  {/* Tile Grid Lines */}
+                  <line x1="0" y1="565" x2="360" y2="565" stroke="#4d1e08" strokeWidth="2" />
+                  <line x1="70" y1="535" x2="50" y2="600" stroke="#4d1e08" strokeWidth="2" />
+                  <line x1="160" y1="535" x2="150" y2="600" stroke="#4d1e08" strokeWidth="2" />
+                  <line x1="250" y1="535" x2="260" y2="600" stroke="#4d1e08" strokeWidth="2" />
+                </g>
+
+                {/* 6. RENDER PLANTS DIRECTLY ON LEDGES & SHELVES */}
+                {SCENE_SPOTS.map((spot, i) => {
+                  const sp = sunroomData[i];
                   return (
-                    <div key={i} className="absolute flex flex-col items-center group" style={{ bottom: pos.bottom, left: pos.left, width: '25%', height: '35%', zIndex: pos.zIndex }}>
-                      {/* Interactive visual wrapper (could expand to modals on tap later) */}
-                      <div className="w-full h-full relative cursor-pointer active:scale-95 transition-transform">
-                        <PlantVisual plant={sp} isBlooming={true} scale={pos.scale} soilBaseY={190} />
-                      </div>
-                      
-                      {/* Tiny Plaque for the plant name */}
-                      <div className="bg-white dark:bg-black border-2 border-slate-800 dark:border-retro-border px-1 py-0.5 mt-[-10px] z-20 shadow-[2px_2px_0_0_#000]">
-                        <p className="text-[5px] font-bold text-center text-slate-800 dark:text-white truncate max-w-[50px] uppercase">
-                          {sp.slotName || 'PLANT'}
-                        </p>
-                      </div>
-                    </div>
+                    <g key={i} transform={`translate(${spot.x - 100}, ${spot.y - 215})`} className="cursor-pointer" onClick={() => sp && setInspectedPlant(sp)}>
+                      {sp ? (
+                        <g>
+                          {/* Real Plant Blooming on the Ledge */}
+                          <PlantVisual plant={sp} isBlooming={true} scale={spot.scale} soilBaseY={200} />
+                          {/* Mini Brass Nameplate beneath the pot */}
+                          <g transform={`translate(${100 - 30 * spot.scale}, ${216 - 15 * (1 - spot.scale)})`}>
+                            <rect width={60 * spot.scale} height={8 * spot.scale} fill="#ca8a04" stroke="#000" strokeWidth="1" />
+                            <text x={30 * spot.scale} y={6 * spot.scale} fontSize={5 * spot.scale} fill="#000" textAnchor="middle" fontWeight="bold">
+                              {sp.slotName.substring(0, 7)}
+                            </text>
+                          </g>
+                        </g>
+                      ) : (
+                        /* Empty Brass Saucer on Shelf */
+                        <g transform={`translate(${100 - 18 * spot.scale}, 210)`}>
+                          <ellipse cx={18 * spot.scale} cy="2" rx={18 * spot.scale} ry={3 * spot.scale} fill="#ca8a04" opacity="0.4" stroke="#000" strokeWidth="1" />
+                          <text x={18 * spot.scale} y="-3" fontSize={5 * spot.scale} fill="#ca8a04" opacity="0.6" textAnchor="middle">
+                            [ + ]
+                          </text>
+                        </g>
+                      )}
+                    </g>
                   );
                 })}
-              </div>
+              </svg>
+
+              {/* Plant Inspection Modal */}
+              {inspectedPlant && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setInspectedPlant(null)}>
+                  <div className="w-full max-w-xs retro-panel border-amber-500 p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-20 h-20 mx-auto mb-2">
+                      <PlantVisual plant={inspectedPlant} isBlooming={true} scale={0.65} soilBaseY={190} />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-1">{inspectedPlant.slotName}</h3>
+                    <p className="text-[9px] text-emerald-600 dark:text-retro-neonGreen font-bold mb-2">{getArch(inspectedPlant.type).name}</p>
+                    <div className="bg-slate-100 dark:bg-black border-2 border-slate-600 p-2 text-left text-[8px] space-y-1 mb-3">
+                      <p><span className="text-slate-500">RETIRED ON:</span> <span className="font-bold">DAY {Math.floor(inspectedPlant.age)}</span></p>
+                      <p><span className="text-slate-500">FINAL HEALTH:</span> <span className="font-bold text-emerald-500">{inspectedPlant.health}% HP</span></p>
+                      <p className="text-slate-400 italic pt-1">{getArch(inspectedPlant.type).tagline}</p>
+                    </div>
+                    <button onClick={() => setInspectedPlant(null)} className="retro-btn w-full py-2 bg-emerald-500 text-black text-[8px] font-bold">
+                      CLOSE
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
