@@ -130,8 +130,8 @@
     const ArrowLeftIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>;
     const TrashIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>;
 
-    // Core Plant Vector Generator
-    const PlantVisual = ({ plant, isBlooming, soilBaseY = 168, scale = 1 }) => {
+    // Core Plant Vector Graphic - Returns a native SVG <g>
+    const PlantGraphic = ({ plant, isBlooming, soilBaseY = 168 }) => {
       if (!plant) return null;
       const arch = getArch(plant.type);
       const c = plant.conditions || {};
@@ -148,148 +148,154 @@
       const strokeW = 4;
 
       return (
-        <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
-          <g transform={`scale(${scale}) translate(${100 * (1 - scale)}, ${215 * (1 - scale)})`}>
-            
-            {(c.infestation > 10) && (
-              <g fill="#ff003c" className="bug-idle-anim">
-                <rect x="85" y={soilBaseY - 30} width="4" height="4" /><rect x="115" y={soilBaseY - 45} width="4" height="4" />
-                <rect x="102" y={soilBaseY - 60} width="4" height="4" /><rect x="75" y={soilBaseY - 15} width="4" height="4" />
+        <g>
+          {(c.infestation > 10) && (
+            <g fill="#ff003c" className="bug-idle-anim">
+              <rect x="85" y={soilBaseY - 30} width="4" height="4" /><rect x="115" y={soilBaseY - 45} width="4" height="4" />
+              <rect x="102" y={soilBaseY - 60} width="4" height="4" /><rect x="75" y={soilBaseY - 15} width="4" height="4" />
+            </g>
+          )}
+
+          <g className={plant.isDead ? '' : 'plant-idle-anim'}>
+            {plant.isDead ? (
+              <g stroke="#64748b" strokeWidth="6" fill="none"><polyline points="100,170 102,140 120,135 135,132 135,155" /><polyline points="112,140 125,150 120,162" /></g>
+            ) : !plant.revealed ? (
+              <g strokeWidth={strokeW}>
+                <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} />
+                <polyline points={`100,${stemTopY} 85,${stemTopY - 5} 78,${stemTopY}`} stroke={leafCol} fill="none"/>
+                <polyline points={`100,${stemTopY} 115,${stemTopY - 5} 122,${stemTopY}`} stroke={leafCol} fill="none"/>
+              </g>
+            ) : plant.type === 'cactus' ? (
+              <g>
+                <rect x="88" y={stemTopY} width="24" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth={strokeW} />
+                <line x1="84" y1={stemTopY + 20} x2="116" y2={stemTopY + 20} stroke="#ffea00" strokeWidth="2" />
+                <line x1="84" y1={stemTopY + 45} x2="116" y2={stemTopY + 45} stroke="#ffea00" strokeWidth="2" />
+                {plant.age >= 10 && <polyline points={`88,${stemTopY + 35} 75,${stemTopY + 35} 75,${stemTopY + 15} 82,${stemTopY + 15}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
+                {plant.age >= 13 && <polyline points={`112,${stemTopY + 48} 125,${stemTopY + 48} 125,${stemTopY + 28} 118,${stemTopY + 28}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
+                {isBlooming && <rect x="94" y={stemTopY - 12} width="12" height="12" fill="#ff003c" className="flower-anim" />}
+              </g>
+            ) : plant.type === 'succulent' ? (
+              <g fill={leafCol} stroke="#000" strokeWidth="2">
+                <rect x="66" y={soilBaseY - 20} width="68" height="20" /><rect x="76" y={soilBaseY - 30} width="48" height="18" /><rect x="86" y={soilBaseY - 40} width="28" height="16" fill={bodyCol} />
+                {isBlooming && (<g className="flower-anim"><polyline points={`100,${soilBaseY - 30} 118,${soilBaseY - 60} 122,${soilBaseY - 80}`} stroke="#16a34a" strokeWidth="4" fill="none" /><rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" /></g>)}
+              </g>
+            ) : plant.type === 'fern' ? (
+              <g stroke={bodyCol} fill="none" strokeWidth={strokeW}>
+                <line x1="100" y1={soilBaseY} x2="98" y2={stemTopY} />
+                {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
+                  const yPos = soilBaseY - plantHeight * frac; const spread = 20 + frac * 16;
+                  return (
+                    <g key={idx}>
+                      <polyline points={`100,${yPos} ${100 - spread},${yPos - 10} ${100 - spread - 4},${yPos + 4}`} stroke={leafCol} />
+                      <polyline points={`100,${yPos} ${100 + spread},${yPos - 10} ${100 + spread + 4},${yPos + 4}`} stroke={leafCol} />
+                    </g>
+                  );
+                })}
+                {isBlooming && (<g fill="#0284c7" stroke="none" className="flower-anim"><rect x="68" y={stemTopY + 16} width="6" height="6" /><rect x="126" y={stemTopY + 20} width="6" height="6" /><rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" /></g>)}
+              </g>
+            ) : plant.type === 'bonsai' ? (
+              <g>
+                <polyline points={`100,${soilBaseY} 94,${soilBaseY - 20} 114,${soilBaseY - 42} 98,${stemTopY}`} stroke={bodyCol} strokeWidth="10" strokeLinecap="square" fill="none" />
+                <line x1="110" y1={soilBaseY - 32} x2="132" y2={soilBaseY - 38} stroke={bodyCol} strokeWidth="6" />
+                <line x1="96" y1={soilBaseY - 45} x2="72" y2={soilBaseY - 50} stroke={bodyCol} strokeWidth="6" />
+                <rect x="60" y={soilBaseY - 58} width="36" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
+                <rect x="116" y={soilBaseY - 46} width="32" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
+                <rect x="80" y={stemTopY - 8} width="42" height="14" fill={leafCol} stroke="#000" strokeWidth="2" />
+                {isBlooming && (<g className="flower-anim"><rect x="76" y={soilBaseY - 64} width="6" height="6" fill="#f472b6" /><rect x="126" y={soilBaseY - 52} width="6" height="6" fill="#f472b6" /><rect x="98" y={stemTopY - 14} width="8" height="8" fill="#f472b6" /></g>)}
+              </g>
+            ) : plant.type === 'flytrap' ? (
+              <g>
+                <polyline points={`100,${soilBaseY} 82,${stemTopY + 24} 66,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                <polyline points={`100,${soilBaseY} 118,${stemTopY + 24} 134,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                <polyline points={`100,${soilBaseY} 100,${stemTopY + 12}`} stroke={leafCol} strokeWidth="4" fill="none" />
+                <rect x="52" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <polyline points={`52,${stemTopY - 12} 56,${stemTopY - 18} 60,${stemTopY - 12} 64,${stemTopY - 18} 68,${stemTopY - 12} 72,${stemTopY - 18} 76,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
+                <rect x="124" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <polyline points={`124,${stemTopY - 12} 128,${stemTopY - 18} 132,${stemTopY - 12} 136,${stemTopY - 18} 140,${stemTopY - 12} 144,${stemTopY - 18} 148,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
+                <rect x="88" y={stemTopY} width="24" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <polyline points={`88,${stemTopY} 92,${stemTopY - 6} 96,${stemTopY} 100,${stemTopY - 6} 104,${stemTopY} 108,${stemTopY - 6} 112,${stemTopY}`} stroke="#fff" strokeWidth="2" fill="none" />
+                {isBlooming && (<g className="flower-anim"><line x1="100" y1={soilBaseY - 20} x2="100" y2={stemTopY - 24} stroke="#16a34a" strokeWidth="2" /><rect x="96" y={stemTopY - 30} width="8" height="8" fill="#ffffff" /><rect x="98" y={stemTopY - 28} width="4" height="4" fill="#facc15" /></g>)}
+              </g>
+            ) : plant.type === 'orchid' ? (
+              <g>
+                <polygon points={`100,${soilBaseY} 60,${soilBaseY - 8} 68,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                <polygon points={`100,${soilBaseY} 140,${soilBaseY - 8} 132,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                <polyline points={`100,${soilBaseY} 96,${soilBaseY - 35} 106,${soilBaseY - 70} 122,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                <rect x="114" y={stemTopY - 6} width="16" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" /><rect x="119" y={stemTopY - 1} width="6" height="6" fill="#fef08a" />
+                {plant.age >= 9 && (<g><rect x="98" y={soilBaseY - 55} width="14" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" /><rect x="103" y={soilBaseY - 51} width="4" height="4" fill="#fef08a" /></g>)}
+                {isBlooming && (<g className="flower-anim"><rect x="126" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" /><rect x="110" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" /></g>)}
+              </g>
+            ) : plant.type === 'snake' ? (
+              <g>
+                <polygon points={`100,${soilBaseY} 88,${stemTopY + 10} 98,${stemTopY - 15} 106,${stemTopY + 15}`} fill={leafCol} stroke={bodyCol} strokeWidth="4" />
+                <polygon points={`90,${soilBaseY} 74,${stemTopY + 30} 82,${stemTopY + 10} 92,${stemTopY + 30}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
+                <polygon points={`110,${soilBaseY} 124,${stemTopY + 35} 118,${stemTopY + 15} 108,${stemTopY + 35}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
+                <line x1="94" y1={stemTopY + 15} x2="102" y2={stemTopY + 15} stroke={bodyCol} strokeWidth="2" /><line x1="92" y1={stemTopY + 35} x2="104" y2={stemTopY + 35} stroke={bodyCol} strokeWidth="2" /><line x1="90" y1={stemTopY + 55} x2="106" y2={stemTopY + 55} stroke={bodyCol} strokeWidth="2" />
+                {isBlooming && (<g className="flower-anim"><rect x="96" y={stemTopY - 24} width="8" height="8" fill="#fef08a" /></g>)}
+              </g>
+            ) : plant.type === 'bamboo' ? (
+              <g>
+                <rect x="92" y={stemTopY} width="8" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <line x1="90" y1={stemTopY + 25} x2="102" y2={stemTopY + 25} stroke="#1e293b" strokeWidth="2" /><line x1="90" y1={stemTopY + 50} x2="102" y2={stemTopY + 50} stroke="#1e293b" strokeWidth="2" /><line x1="90" y1={stemTopY + 75} x2="102" y2={stemTopY + 75} stroke="#1e293b" strokeWidth="2" />
+                <rect x="104" y={stemTopY + 20} width="7" height={plantHeight - 20} fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <line x1="102" y1={stemTopY + 45} x2="113" y2={stemTopY + 45} stroke="#1e293b" strokeWidth="2" /><line x1="102" y1={stemTopY + 70} x2="113" y2={stemTopY + 70} stroke="#1e293b" strokeWidth="2" />
+                <polyline points={`92,${stemTopY + 5} 74,${stemTopY - 10} 70,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                <polyline points={`100,${stemTopY + 5} 115,${stemTopY - 12} 120,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                <polyline points={`108,${stemTopY + 25} 126,${stemTopY + 12} 130,${stemTopY + 20}`} stroke={leafCol} strokeWidth="3" fill="none" />
+                {isBlooming && (<g className="flower-anim"><rect x="88" y={stemTopY + 34} width="26" height="6" fill="#ef4444" /><polygon points={`101,${stemTopY + 40} 95,${stemTopY + 50} 107,${stemTopY + 50}`} fill="#ef4444" /></g>)}
+              </g>
+            ) : plant.type === 'sunflower' ? (
+              <g>
+                <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={leafCol} strokeWidth="5" />
+                <polygon points={`100,${soilBaseY - plantHeight * 0.4} 72,${soilBaseY - plantHeight * 0.45} 78,${soilBaseY - plantHeight * 0.32}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                <polygon points={`100,${soilBaseY - plantHeight * 0.6} 128,${soilBaseY - plantHeight * 0.65} 122,${soilBaseY - plantHeight * 0.52}`} fill={leafCol} stroke="#000" strokeWidth="2" />
+                <rect x="88" y={stemTopY - 12} width="24" height="24" fill={bodyCol} stroke="#000" strokeWidth="2" />
+                <rect x="94" y={stemTopY - 18} width="12" height="6" fill="#facc15" /><rect x="94" y={stemTopY + 12} width="12" height="6" fill="#facc15" />
+                <rect x="82" y={stemTopY - 6} width="6" height="12" fill="#facc15" /><rect x="112" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
+                <rect x="94" y={stemTopY - 6} width="12" height="12" fill="#451a03" />
+                {isBlooming && (<g className="flower-anim"><rect x="84" y={stemTopY - 16} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY - 16} width="6" height="6" fill="#facc15" /><rect x="84" y={stemTopY + 10} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY + 10} width="6" height="6" fill="#facc15" /></g>)}
+              </g>
+            ) : (
+              <g>
+                <g fill={leafCol} stroke="#000" strokeWidth="2">
+                  <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} strokeWidth="4" />
+                  <polygon points={`100,${soilBaseY - plantHeight * 0.4} 70,${soilBaseY - plantHeight * 0.5} 62,${soilBaseY - plantHeight * 0.35} 80,${soilBaseY - plantHeight * 0.28}`} />
+                  <polygon points={`100,${soilBaseY - plantHeight * 0.65} 130,${soilBaseY - plantHeight * 0.75} 138,${soilBaseY - plantHeight * 0.6} 120,${soilBaseY - plantHeight * 0.52}`} />
+                  <polygon points={`100,${stemTopY} 85,${stemTopY - 20} 100,${stemTopY - 25} 115,${stemTopY - 20}`} />
+                </g>
+                {isBlooming && (<g className="flower-anim"><polyline points={`98,${soilBaseY - 15} 84,${soilBaseY - 50} 80,${soilBaseY - 75}`} stroke="#16a34a" strokeWidth="4" fill="none" /><rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" /><rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" /></g>)}
               </g>
             )}
-
-            <g className={plant.isDead ? '' : 'plant-idle-anim'}>
-              {plant.isDead ? (
-                <g stroke="#64748b" strokeWidth="6" fill="none"><polyline points="100,170 102,140 120,135 135,132 135,155" /><polyline points="112,140 125,150 120,162" /></g>
-              ) : !plant.revealed ? (
-                <g strokeWidth={strokeW}>
-                  <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} />
-                  <polyline points={`100,${stemTopY} 85,${stemTopY - 5} 78,${stemTopY}`} stroke={leafCol} fill="none"/>
-                  <polyline points={`100,${stemTopY} 115,${stemTopY - 5} 122,${stemTopY}`} stroke={leafCol} fill="none"/>
-                </g>
-              ) : plant.type === 'cactus' ? (
-                <g>
-                  <rect x="88" y={stemTopY} width="24" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth={strokeW} />
-                  <line x1="84" y1={stemTopY + 20} x2="116" y2={stemTopY + 20} stroke="#ffea00" strokeWidth="2" />
-                  <line x1="84" y1={stemTopY + 45} x2="116" y2={stemTopY + 45} stroke="#ffea00" strokeWidth="2" />
-                  {plant.age >= 10 && <polyline points={`88,${stemTopY + 35} 75,${stemTopY + 35} 75,${stemTopY + 15} 82,${stemTopY + 15}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
-                  {plant.age >= 13 && <polyline points={`112,${stemTopY + 48} 125,${stemTopY + 48} 125,${stemTopY + 28} 118,${stemTopY + 28}`} stroke={bodyCol} strokeWidth="8" fill="none" />}
-                  {isBlooming && <rect x="94" y={stemTopY - 12} width="12" height="12" fill="#ff003c" className="flower-anim" />}
-                </g>
-              ) : plant.type === 'succulent' ? (
-                <g fill={leafCol} stroke="#000" strokeWidth="2">
-                  <rect x="66" y={soilBaseY - 20} width="68" height="20" /><rect x="76" y={soilBaseY - 30} width="48" height="18" /><rect x="86" y={soilBaseY - 40} width="28" height="16" fill={bodyCol} />
-                  {isBlooming && (<g className="flower-anim"><polyline points={`100,${soilBaseY - 30} 118,${soilBaseY - 60} 122,${soilBaseY - 80}`} stroke="#16a34a" strokeWidth="4" fill="none" /><rect x="118" y={soilBaseY - 84} width="8" height="8" fill="#ffea00" /></g>)}
-                </g>
-              ) : plant.type === 'fern' ? (
-                <g stroke={bodyCol} fill="none" strokeWidth={strokeW}>
-                  <line x1="100" y1={soilBaseY} x2="98" y2={stemTopY} />
-                  {[0.25, 0.5, 0.75, 1.0].map((frac, idx) => {
-                    const yPos = soilBaseY - plantHeight * frac; const spread = 20 + frac * 16;
-                    return (
-                      <g key={idx}>
-                        <polyline points={`100,${yPos} ${100 - spread},${yPos - 10} ${100 - spread - 4},${yPos + 4}`} stroke={leafCol} />
-                        <polyline points={`100,${yPos} ${100 + spread},${yPos - 10} ${100 + spread + 4},${yPos + 4}`} stroke={leafCol} />
-                      </g>
-                    );
-                  })}
-                  {isBlooming && (<g fill="#0284c7" stroke="none" className="flower-anim"><rect x="68" y={stemTopY + 16} width="6" height="6" /><rect x="126" y={stemTopY + 20} width="6" height="6" /><rect x="96" y={stemTopY - 4} width="8" height="8" fill="#fff" /></g>)}
-                </g>
-              ) : plant.type === 'bonsai' ? (
-                <g>
-                  <polyline points={`100,${soilBaseY} 94,${soilBaseY - 20} 114,${soilBaseY - 42} 98,${stemTopY}`} stroke={bodyCol} strokeWidth="10" strokeLinecap="square" fill="none" />
-                  <line x1="110" y1={soilBaseY - 32} x2="132" y2={soilBaseY - 38} stroke={bodyCol} strokeWidth="6" />
-                  <line x1="96" y1={soilBaseY - 45} x2="72" y2={soilBaseY - 50} stroke={bodyCol} strokeWidth="6" />
-                  <rect x="60" y={soilBaseY - 58} width="36" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <rect x="116" y={soilBaseY - 46} width="32" height="12" fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <rect x="80" y={stemTopY - 8} width="42" height="14" fill={leafCol} stroke="#000" strokeWidth="2" />
-                  {isBlooming && (<g className="flower-anim"><rect x="76" y={soilBaseY - 64} width="6" height="6" fill="#f472b6" /><rect x="126" y={soilBaseY - 52} width="6" height="6" fill="#f472b6" /><rect x="98" y={stemTopY - 14} width="8" height="8" fill="#f472b6" /></g>)}
-                </g>
-              ) : plant.type === 'flytrap' ? (
-                <g>
-                  <polyline points={`100,${soilBaseY} 82,${stemTopY + 24} 66,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
-                  <polyline points={`100,${soilBaseY} 118,${stemTopY + 24} 134,${stemTopY}`} stroke={leafCol} strokeWidth="4" fill="none" />
-                  <polyline points={`100,${soilBaseY} 100,${stemTopY + 12}`} stroke={leafCol} strokeWidth="4" fill="none" />
-                  <rect x="52" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <polyline points={`52,${stemTopY - 12} 56,${stemTopY - 18} 60,${stemTopY - 12} 64,${stemTopY - 18} 68,${stemTopY - 12} 72,${stemTopY - 18} 76,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
-                  <rect x="124" y={stemTopY - 12} width="24" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <polyline points={`124,${stemTopY - 12} 128,${stemTopY - 18} 132,${stemTopY - 12} 136,${stemTopY - 18} 140,${stemTopY - 12} 144,${stemTopY - 18} 148,${stemTopY - 12}`} stroke="#fff" strokeWidth="2" fill="none" />
-                  <rect x="88" y={stemTopY} width="24" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <polyline points={`88,${stemTopY} 92,${stemTopY - 6} 96,${stemTopY} 100,${stemTopY - 6} 104,${stemTopY} 108,${stemTopY - 6} 112,${stemTopY}`} stroke="#fff" strokeWidth="2" fill="none" />
-                  {isBlooming && (<g className="flower-anim"><line x1="100" y1={soilBaseY - 20} x2="100" y2={stemTopY - 24} stroke="#16a34a" strokeWidth="2" /><rect x="96" y={stemTopY - 30} width="8" height="8" fill="#ffffff" /><rect x="98" y={stemTopY - 28} width="4" height="4" fill="#facc15" /></g>)}
-                </g>
-              ) : plant.type === 'orchid' ? (
-                <g>
-                  <polygon points={`100,${soilBaseY} 60,${soilBaseY - 8} 68,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <polygon points={`100,${soilBaseY} 140,${soilBaseY - 8} 132,${soilBaseY - 18} 100,${soilBaseY - 10}`} fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <polyline points={`100,${soilBaseY} 96,${soilBaseY - 35} 106,${soilBaseY - 70} 122,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
-                  <rect x="114" y={stemTopY - 6} width="16" height="16" fill={bodyCol} stroke="#000" strokeWidth="2" /><rect x="119" y={stemTopY - 1} width="6" height="6" fill="#fef08a" />
-                  {plant.age >= 9 && (<g><rect x="98" y={soilBaseY - 55} width="14" height="14" fill={bodyCol} stroke="#000" strokeWidth="2" /><rect x="103" y={soilBaseY - 51} width="4" height="4" fill="#fef08a" /></g>)}
-                  {isBlooming && (<g className="flower-anim"><rect x="126" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" /><rect x="110" y={stemTopY - 2} width="6" height="6" fill="#fae8ff" /></g>)}
-                </g>
-              ) : plant.type === 'snake' ? (
-                <g>
-                  <polygon points={`100,${soilBaseY} 88,${stemTopY + 10} 98,${stemTopY - 15} 106,${stemTopY + 15}`} fill={leafCol} stroke={bodyCol} strokeWidth="4" />
-                  <polygon points={`90,${soilBaseY} 74,${stemTopY + 30} 82,${stemTopY + 10} 92,${stemTopY + 30}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
-                  <polygon points={`110,${soilBaseY} 124,${stemTopY + 35} 118,${stemTopY + 15} 108,${stemTopY + 35}`} fill={leafCol} stroke={bodyCol} strokeWidth="3" />
-                  <line x1="94" y1={stemTopY + 15} x2="102" y2={stemTopY + 15} stroke={bodyCol} strokeWidth="2" /><line x1="92" y1={stemTopY + 35} x2="104" y2={stemTopY + 35} stroke={bodyCol} strokeWidth="2" /><line x1="90" y1={stemTopY + 55} x2="106" y2={stemTopY + 55} stroke={bodyCol} strokeWidth="2" />
-                  {isBlooming && (<g className="flower-anim"><rect x="96" y={stemTopY - 24} width="8" height="8" fill="#fef08a" /></g>)}
-                </g>
-              ) : plant.type === 'bamboo' ? (
-                <g>
-                  <rect x="92" y={stemTopY} width="8" height={plantHeight} fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <line x1="90" y1={stemTopY + 25} x2="102" y2={stemTopY + 25} stroke="#1e293b" strokeWidth="2" /><line x1="90" y1={stemTopY + 50} x2="102" y2={stemTopY + 50} stroke="#1e293b" strokeWidth="2" /><line x1="90" y1={stemTopY + 75} x2="102" y2={stemTopY + 75} stroke="#1e293b" strokeWidth="2" />
-                  <rect x="104" y={stemTopY + 20} width="7" height={plantHeight - 20} fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <line x1="102" y1={stemTopY + 45} x2="113" y2={stemTopY + 45} stroke="#1e293b" strokeWidth="2" /><line x1="102" y1={stemTopY + 70} x2="113" y2={stemTopY + 70} stroke="#1e293b" strokeWidth="2" />
-                  <polyline points={`92,${stemTopY + 5} 74,${stemTopY - 10} 70,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
-                  <polyline points={`100,${stemTopY + 5} 115,${stemTopY - 12} 120,${stemTopY}`} stroke={leafCol} strokeWidth="3" fill="none" />
-                  <polyline points={`108,${stemTopY + 25} 126,${stemTopY + 12} 130,${stemTopY + 20}`} stroke={leafCol} strokeWidth="3" fill="none" />
-                  {isBlooming && (<g className="flower-anim"><rect x="88" y={stemTopY + 34} width="26" height="6" fill="#ef4444" /><polygon points={`101,${stemTopY + 40} 95,${stemTopY + 50} 107,${stemTopY + 50}`} fill="#ef4444" /></g>)}
-                </g>
-              ) : plant.type === 'sunflower' ? (
-                <g>
-                  <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={leafCol} strokeWidth="5" />
-                  <polygon points={`100,${soilBaseY - plantHeight * 0.4} 72,${soilBaseY - plantHeight * 0.45} 78,${soilBaseY - plantHeight * 0.32}`} fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <polygon points={`100,${soilBaseY - plantHeight * 0.6} 128,${soilBaseY - plantHeight * 0.65} 122,${soilBaseY - plantHeight * 0.52}`} fill={leafCol} stroke="#000" strokeWidth="2" />
-                  <rect x="88" y={stemTopY - 12} width="24" height="24" fill={bodyCol} stroke="#000" strokeWidth="2" />
-                  <rect x="94" y={stemTopY - 18} width="12" height="6" fill="#facc15" /><rect x="94" y={stemTopY + 12} width="12" height="6" fill="#facc15" />
-                  <rect x="82" y={stemTopY - 6} width="6" height="12" fill="#facc15" /><rect x="112" y={stemTopY - 6} width="6" height="12" fill="#facc15" />
-                  <rect x="94" y={stemTopY - 6} width="12" height="12" fill="#451a03" />
-                  {isBlooming && (<g className="flower-anim"><rect x="84" y={stemTopY - 16} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY - 16} width="6" height="6" fill="#facc15" /><rect x="84" y={stemTopY + 10} width="6" height="6" fill="#facc15" /><rect x="110" y={stemTopY + 10} width="6" height="6" fill="#facc15" /></g>)}
-                </g>
-              ) : (
-                <g>
-                  <g fill={leafCol} stroke="#000" strokeWidth="2">
-                    <line x1="100" y1={soilBaseY} x2="100" y2={stemTopY} stroke={bodyCol} strokeWidth="4" />
-                    <polygon points={`100,${soilBaseY - plantHeight * 0.4} 70,${soilBaseY - plantHeight * 0.5} 62,${soilBaseY - plantHeight * 0.35} 80,${soilBaseY - plantHeight * 0.28}`} />
-                    <polygon points={`100,${soilBaseY - plantHeight * 0.65} 130,${soilBaseY - plantHeight * 0.75} 138,${soilBaseY - plantHeight * 0.6} 120,${soilBaseY - plantHeight * 0.52}`} />
-                    <polygon points={`100,${stemTopY} 85,${stemTopY - 20} 100,${stemTopY - 25} 115,${stemTopY - 20}`} />
-                  </g>
-                  {isBlooming && (<g className="flower-anim"><polyline points={`98,${soilBaseY - 15} 84,${soilBaseY - 50} 80,${soilBaseY - 75}`} stroke="#16a34a" strokeWidth="4" fill="none" /><rect x="72" y={soilBaseY - 86} width="16" height="20" fill="#fff" stroke="#000" strokeWidth="2" /><rect x="78" y={soilBaseY - 82} width="4" height="12" fill="#ffea00" /></g>)}
-                </g>
-              )}
-            </g>
-            <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
-            <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor || '#ea580c'} stroke="#000" strokeWidth="2" />
           </g>
-        </svg>
+
+          {/* Pot & Soil - Base centered at (100, 214) */}
+          <rect x="58" y="163" width="84" height="14" fill="#3e2723" stroke="#000" strokeWidth="2" />
+          <polygon points="60,170 70,214 130,214 140,170" fill={plant.potColor || '#ea580c'} stroke="#000" strokeWidth="2" />
+        </g>
       );
     };
 
-    // Explicit 8-bit Shelving Coordinates
-    // Spot 0, 1, 2 = Upper Hanging Shelf (Y=195)
-    // Spot 3, 4, 5 = Middle Window Ledge (Y=375)
-    // Spot 6, 7, 8 = Sunroom Floor (Y=545)
+    // Wrapper for Main Gameplay Viewport
+    const PlantVisual = ({ plant, isBlooming }) => (
+      <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
+        <PlantGraphic plant={plant} isBlooming={isBlooming} />
+      </svg>
+    );
+
+    // Exact Mathematical Shelving Coordinates: (100, 214) maps flush to (spot.x, spot.y)
+    // Row 1: Top Hanging Shelf (Plank Surface at Y = 192)
+    // Row 2: Middle Window Ledge (Sill Surface at Y = 366)
+    // Row 3: Sunroom Floor (Floor Surface at Y = 550)
     const SCENE_SPOTS = [
-      { x: 60,  y: 195, scale: 0.35 },
-      { x: 180, y: 195, scale: 0.35 },
-      { x: 300, y: 195, scale: 0.35 },
-      { x: 65,  y: 375, scale: 0.48 },
-      { x: 180, y: 375, scale: 0.48 },
-      { x: 295, y: 375, scale: 0.48 },
-      { x: 70,  y: 545, scale: 0.62 },
-      { x: 180, y: 545, scale: 0.62 },
-      { x: 290, y: 545, scale: 0.62 }
+      { x: 65,  y: 192, scale: 0.38, plateY: 194 },
+      { x: 180, y: 192, scale: 0.38, plateY: 194 },
+      { x: 295, y: 192, scale: 0.38, plateY: 194 },
+      { x: 65,  y: 366, scale: 0.50, plateY: 369 },
+      { x: 180, y: 366, scale: 0.50, plateY: 369 },
+      { x: 295, y: 366, scale: 0.50, plateY: 369 },
+      { x: 65,  y: 550, scale: 0.65, plateY: 553 },
+      { x: 180, y: 550, scale: 0.65, plateY: 553 },
+      { x: 295, y: 550, scale: 0.65, plateY: 553 }
     ];
 
     function App() {
@@ -640,7 +646,7 @@
                 <rect x="120" y="175" width="220" height="6" fill="#f7b77f" opacity="0.6" />
                 <rect x="0" y="210" width="180" height="5" fill="#f19456" opacity="0.6" />
 
-                {/* 2. DISTANT AMBER SKYLINE (Golden Silhouettes) */}
+                {/* 2. DISTANT AMBER SKYLINE */}
                 <g fill="#e09051">
                   <rect x="20" y="260" width="35" height="100" />
                   <rect x="65" y="240" width="28" height="120" />
@@ -653,7 +659,7 @@
                   <rect x="310" y="250" width="40" height="110" />
                 </g>
 
-                {/* 3. TELEGRAPH WIRES & BIRDS (HOMAGE TO ATTACHED IMAGE) */}
+                {/* 3. TELEGRAPH WIRES & BIRDS */}
                 <line x1="0" y1="130" x2="360" y2="130" stroke="#1c2d35" strokeWidth="2" />
                 <line x1="0" y1="148" x2="360" y2="148" stroke="#1c2d35" strokeWidth="2" />
                 <line x1="0" y1="215" x2="360" y2="215" stroke="#1c2d35" strokeWidth="2" />
@@ -676,7 +682,7 @@
                   <line x1="14" y1="14" x2="14" y2="16" stroke="#000" strokeWidth="2" />
                 </g>
 
-                {/* 4. MID-GROUND TEAL BUILDINGS WITH LIT PIXEL WINDOWS */}
+                {/* 4. MID-GROUND TEAL BUILDINGS */}
                 <g fill="#2d4a54">
                   <rect x="0" y="280" width="75" height="100" />
                   <rect x="70" y="295" width="85" height="85" />
@@ -707,41 +713,35 @@
                 {/* Dither Texture on Rooftops */}
                 <rect x="0" y="340" width="360" height="30" fill="url(#pixelDither)" opacity="0.3" />
 
-                {/* 5. INTERIOR SUNROOM STRUCTURE */}
+                {/* 5. INTERIOR ARCHITECTURE & SHELVING */}
                 
-                {/* Side Walls (Interior Frame) */}
+                {/* Frame & Mullions */}
                 <rect x="0" y="0" width="14" height="600" fill="#1e1814" />
                 <rect x="346" y="0" width="14" height="600" fill="#1e1814" />
                 <rect x="0" y="0" width="360" height="16" fill="#1e1814" />
-
-                {/* Vertical Window Mullions */}
                 <rect x="118" y="16" width="6" height="350" fill="#2d2119" stroke="#000" strokeWidth="1" />
                 <rect x="236" y="16" width="6" height="350" fill="#2d2119" stroke="#000" strokeWidth="1" />
 
-                {/* SHELF 1: TOP HANGING SHELF (Tied into mullions) */}
+                {/* SHELF 1: TOP HANGING SHELF (Y = 192) */}
                 <g>
-                  {/* Metal Shelf Brackets */}
                   <rect x="40" y="196" width="6" height="12" fill="#000" />
                   <rect x="160" y="196" width="6" height="12" fill="#000" />
                   <rect x="280" y="196" width="6" height="12" fill="#000" />
-                  {/* Heavy Wooden Shelf Plank */}
                   <rect x="14" y="192" width="332" height="7" fill="#5c381e" stroke="#000" strokeWidth="1" />
                   <rect x="14" y="192" width="332" height="2" fill="#8b572a" />
                 </g>
 
-                {/* SHELF 2: WIDE WINDOW LEDGE / SILL */}
+                {/* SHELF 2: WIDE WINDOW SILL / LEDGE (Y = 366) */}
                 <g>
                   <rect x="0" y="366" width="360" height="14" fill="#4a2e18" stroke="#000" strokeWidth="2" />
                   <rect x="0" y="366" width="360" height="3" fill="#7a4f2b" />
-                  {/* Ledge Support Corbel Blocks */}
                   <rect x="30" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
                   <rect x="150" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
                   <rect x="270" y="380" width="18" height="14" fill="#362111" stroke="#000" strokeWidth="1" />
                 </g>
 
-                {/* Lower Interior Wall below Window */}
-                <rect x="0" y="380" width="360" height="160" fill="#2d2621" />
-                {/* Brickwork Texture on Lower Wall */}
+                {/* Lower Interior Brick Wall */}
+                <rect x="0" y="380" width="360" height="155" fill="#2d2621" />
                 <g stroke="#1b1714" strokeWidth="2" opacity="0.5">
                   <line x1="0" y1="410" x2="360" y2="410" />
                   <line x1="0" y1="440" x2="360" y2="440" />
@@ -750,39 +750,45 @@
                   <line x1="0" y1="530" x2="360" y2="530" />
                 </g>
 
-                {/* SHELF 3: TERRACOTTA TILED SUNROOM FLOOR */}
+                {/* SHELF 3: TERRACOTTA TILED FLOOR (Y = 550) */}
                 <g>
                   <polygon points="0,535 360,535 360,600 0,600" fill="#783516" stroke="#000" strokeWidth="2" />
-                  {/* Tile Grid Lines */}
                   <line x1="0" y1="565" x2="360" y2="565" stroke="#4d1e08" strokeWidth="2" />
                   <line x1="70" y1="535" x2="50" y2="600" stroke="#4d1e08" strokeWidth="2" />
                   <line x1="160" y1="535" x2="150" y2="600" stroke="#4d1e08" strokeWidth="2" />
                   <line x1="250" y1="535" x2="260" y2="600" stroke="#4d1e08" strokeWidth="2" />
                 </g>
 
-                {/* 6. RENDER PLANTS DIRECTLY ON LEDGES & SHELVES */}
+                {/* 6. PLANTS & EMPTY SAUCERS PINNED EXACTLY TO SURFACES */}
                 {SCENE_SPOTS.map((spot, i) => {
                   const sp = sunroomData[i];
                   return (
-                    <g key={i} transform={`translate(${spot.x - 100}, ${spot.y - 215})`} className="cursor-pointer" onClick={() => sp && setInspectedPlant(sp)}>
+                    <g key={i}>
                       {sp ? (
-                        <g>
-                          {/* Real Plant Blooming on the Ledge */}
-                          <PlantVisual plant={sp} isBlooming={true} scale={spot.scale} soilBaseY={200} />
-                          {/* Mini Brass Nameplate beneath the pot */}
-                          <g transform={`translate(${100 - 30 * spot.scale}, ${216 - 15 * (1 - spot.scale)})`}>
-                            <rect width={60 * spot.scale} height={8 * spot.scale} fill="#ca8a04" stroke="#000" strokeWidth="1" />
-                            <text x={30 * spot.scale} y={6 * spot.scale} fontSize={5 * spot.scale} fill="#000" textAnchor="middle" fontWeight="bold">
+                        <g className="cursor-pointer" onClick={() => setInspectedPlant(sp)}>
+                          {/* Ground Contact Shadow */}
+                          <ellipse cx={spot.x} cy={spot.y + 1} rx={28 * spot.scale} ry={5 * spot.scale} fill="#000" opacity="0.35" />
+                          
+                          {/* Plant Rendered Flush to Surface */}
+                          <g transform={`translate(${spot.x}, ${spot.y}) scale(${spot.scale}) translate(-100, -214)`}>
+                            <PlantGraphic plant={sp} isBlooming={true} />
+                          </g>
+
+                          {/* Mounted Brass Plaque */}
+                          <g transform={`translate(${spot.x - 22 * spot.scale}, ${spot.plateY})`}>
+                            <rect width={44 * spot.scale} height={9 * spot.scale} fill="#ca8a04" stroke="#000" strokeWidth="1" />
+                            <text x={22 * spot.scale} y={6.5 * spot.scale} fontSize={5 * spot.scale} fill="#000" textAnchor="middle" fontWeight="bold">
                               {sp.slotName.substring(0, 7)}
                             </text>
                           </g>
                         </g>
                       ) : (
                         /* Empty Brass Saucer on Shelf */
-                        <g transform={`translate(${100 - 18 * spot.scale}, 210)`}>
-                          <ellipse cx={18 * spot.scale} cy="2" rx={18 * spot.scale} ry={3 * spot.scale} fill="#ca8a04" opacity="0.4" stroke="#000" strokeWidth="1" />
-                          <text x={18 * spot.scale} y="-3" fontSize={5 * spot.scale} fill="#ca8a04" opacity="0.6" textAnchor="middle">
-                            [ + ]
+                        <g transform={`translate(${spot.x}, ${spot.y})`}>
+                          <ellipse cx="0" cy="0" rx={24 * spot.scale} ry={5 * spot.scale} fill="#ca8a04" opacity="0.4" stroke="#000" strokeWidth="1" />
+                          <ellipse cx="0" cy="-1" rx={20 * spot.scale} ry={4 * spot.scale} fill="#a16207" opacity="0.4" />
+                          <text x="0" y={-8 * spot.scale} fontSize={6 * spot.scale} fill="#ca8a04" opacity="0.7" textAnchor="middle">
+                            +
                           </text>
                         </g>
                       )}
@@ -796,7 +802,7 @@
                 <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setInspectedPlant(null)}>
                   <div className="w-full max-w-xs retro-panel border-amber-500 p-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <div className="w-20 h-20 mx-auto mb-2">
-                      <PlantVisual plant={inspectedPlant} isBlooming={true} scale={0.65} soilBaseY={190} />
+                      <PlantVisual plant={inspectedPlant} isBlooming={true} />
                     </div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-1">{inspectedPlant.slotName}</h3>
                     <p className="text-[9px] text-emerald-600 dark:text-retro-neonGreen font-bold mb-2">{getArch(inspectedPlant.type).name}</p>
