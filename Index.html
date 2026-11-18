@@ -89,6 +89,30 @@
       CACTUS_BLOOM: [
         [ "      888       ", "     89898      ", "     88888      ", "     00000      ", "    0212330     ", "    0122230     ", "    0122230 000 ", " 000012223003210", "0123012223032210", "0122012223022210", "012201222300000 ", " 0000122230     ", "    0122230     ", "    0122230     ", "    0122230     " ],
         [ "       888      ", "      89898     ", "       888      ", "      00000     ", "     0212330    ", "     0122230    ", "  0000122230 000", " 012301222300321", " 012201222303221", " 012201222302221", "  00001222300000", "     0122230    ", "     0122230    ", "     0122230    ", "     0122230    " ]
+      ],
+      SUCCULENT_MATURE: [
+        [ "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "       44       ", "    44455444    ", "   4554554554   ", " 44555466455544 ", " 45566466466554 ", "  4444 44 4444  " ],
+        [ "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "       44       ", "    44455444    ", "   4554554554   ", "  455546645554  ", " 45566466466554 ", " 44444 44 44444 " ]
+      ],
+      SUCCULENT_BLOOM: [
+        [ "                ", "                ", "       77       ", "      7887      ", "       77       ", "       66       ", "       66       ", "       66       ", "       66       ", "       44       ", "    44455444    ", "   4554554554   ", " 44555466455544 ", " 45566466466554 ", "  4444 44 4444  " ],
+        [ "                ", "                ", "       77       ", "      7897      ", "       77       ", "       66       ", "       66       ", "       66       ", "       66       ", "       44       ", "    44455444    ", "   4554554554   ", "  455546645554  ", " 45566466466554 ", " 44444 44 44444 " ]
+      ],
+      FERN_MATURE: [
+        [ "       44       ", "      4554      ", "  444455554444  ", " 45555455455554 ", " 45455455455454 ", "  445554455544  ", "  455555555554  ", " 45545555554554 ", " 444 455554 444 ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "       44       " ],
+        [ "        44      ", "       4554     ", "   44445555444  ", "  4555545545554 ", "  45455455455454", "   445554455544 ", "   455555555554 ", "  45545555554554", "  444 455554 444", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "        44      " ]
+      ],
+      FERN_BLOOM: [
+        [ "       44       ", "      4554      ", " 74444555544447 ", " 45555455455554 ", " 45455455455454 ", "  445554455544  ", "  455555555554  ", " 45545555554554 ", " 444 455554 444 ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "       44       " ],
+        [ "        44      ", "       4554     ", "  7444455554447 ", "  4555545545554 ", "  45455455455454", "   445554455544 ", "   455555555554 ", "  45545555554554", "  444 455554 444", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "        44      " ]
+      ],
+      SUNFLOWER_MATURE: [
+        [ "                ", "                ", "                ", "       66       ", "       66       ", "       66       ", "       66       ", "      4664      ", "     456654     ", "    45566554    ", "    44466444    ", "       66       ", "       66       ", "       66       ", "       66       " ],
+        [ "                ", "                ", "                ", "        66      ", "        66      ", "        66      ", "        66      ", "       4664     ", "      456654    ", "     45566554   ", "     44466444   ", "        66      ", "        66      ", "        66      ", "        66      " ]
+      ],
+      SUNFLOWER_BLOOM: [
+        [ "       77       ", "      7887      ", "     789987     ", "     789987     ", "      7887      ", "       77       ", "       66       ", "      4664      ", "     456654     ", "    45566554    ", "    44466444    ", "       66       ", "       66       ", "       66       ", "       66       " ],
+        [ "        77      ", "       7887     ", "      789987    ", "      789987    ", "       7887     ", "        77      ", "        66      ", "       4664     ", "      456654    ", "     45566554   ", "     44466444   ", "        66      ", "        66      ", "        66      ", "        66      " ]
       ]
     };
 
@@ -96,8 +120,8 @@
       leafy: { name: 'BROAD AROID', tagline: 'BALANCED LIGHT & STEADY WARMTH.', moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90], pal: { '4':'#000', '5':'#4ade80', '6':'#166534', '7':'#000', '8':'#ffffff', '9':'#facc15' } },
       cactus: { name: 'DESERT CACTUS', tagline: 'LOVES INTENSE SUN & LITTLE WATER.', moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65], pal: { '0':'#000', '1':'#4ade80', '2':'#16a34a', '3':'#14532d', '8':'#ef4444', '9':'#facc15' } },
       succulent: { name: 'FLESHY SUCC', tagline: 'THRIVES IN WARMTH & DRY SOIL.', moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75], pal: { '4':'#000', '5':'#0d9488', '6':'#0f766e', '7':'#000', '8':'#facc15', '9':'#ffffff' } },
-      fern: { name: 'CANOPY FERN', tagline: 'CRAVES MOISTURE & GENTLE SHADE.', moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95], pal: { '4':'#000', '5':'#22c55e', '6':'#14532d', '7':'#000', '8':'#0ea5e9', '9':'#ffffff' } },
-      sunflower: { name: 'SUN CHASER', tagline: 'WORSHIPS THE BLAZING SUN.', moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90], pal: { '4':'#000', '5':'#ca8a04', '6':'#a16207', '7':'#000', '8':'#facc15', '9':'#451a03' } }
+      fern: { name: 'CANOPY FERN', tagline: 'CRAVES MOISTURE & GENTLE SHADE.', moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95], pal: { '4':'#000', '5':'#22c55e', '6':'#14532d', '7':'#0ea5e9', '8':'#0ea5e9', '9':'#ffffff' } },
+      sunflower: { name: 'SUN CHASER', tagline: 'WORSHIPS THE BLAZING SUN.', moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90], pal: { '4':'#000', '5':'#ca8a04', '6':'#16a34a', '7':'#000', '8':'#facc15', '9':'#451a03' } }
     };
 
     function getArch(type) { return PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy']; }
@@ -160,14 +184,9 @@
     const ArrowLeftIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><polygon points="10,4 2,12 10,20 10,14 22,14 22,10 10,10"/></svg>;
     const TrashIcon = () => <svg className="w-4 h-4 pixelated" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="16"/><rect x="4" y="4" width="16" height="2"/><rect x="10" y="2" width="4" height="2"/></svg>;
     
-    // Custom Music Icon
     const MusicIcon = () => (
       <svg className="w-3.5 h-3.5 pixelated" viewBox="0 0 24 24" fill="currentColor">
-        <rect x="5" y="16" width="6" height="4" />
-        <rect x="15" y="14" width="6" height="4" />
-        <rect x="9" y="4" width="2" height="14" />
-        <rect x="19" y="2" width="2" height="14" />
-        <rect x="9" y="2" width="12" height="2" />
+        <rect x="5" y="16" width="6" height="4" /><rect x="15" y="14" width="6" height="4" /><rect x="9" y="4" width="2" height="14" /><rect x="19" y="2" width="2" height="14" /><rect x="9" y="2" width="12" height="2" />
       </svg>
     );
 
@@ -216,12 +235,21 @@
       let pOffsetY = soilBaseY - (10 * 4);
 
       if (plant.revealed) {
-        const family = plant.type === 'cactus' ? 'CACTUS' : 'LEAFY';
-        if (isBlooming && SPRITES[`${family}_BLOOM`]) {
-          activeSprite = SPRITES[`${family}_BLOOM`][frame];
+        const family = plant.type.toUpperCase();
+        if (SPRITES[`${family}_MATURE`]) {
+          if (isBlooming && SPRITES[`${family}_BLOOM`]) {
+            activeSprite = SPRITES[`${family}_BLOOM`][frame];
+          } else {
+            activeSprite = SPRITES[`${family}_MATURE`][frame];
+          }
           pOffsetY = soilBaseY - (15 * 4);
         } else {
-          activeSprite = SPRITES[`${family}_MATURE`][frame];
+          // Fallback to LEAFY
+          if (isBlooming && SPRITES.LEAFY_BLOOM) {
+            activeSprite = SPRITES.LEAFY_BLOOM[frame];
+          } else {
+            activeSprite = SPRITES.LEAFY_MATURE[frame];
+          }
           pOffsetY = soilBaseY - (15 * 4);
         }
       }
@@ -240,9 +268,11 @@
       );
     };
 
-    const PlantViewport = ({ plant, isBlooming }) => (
+    const PlantViewport = ({ plant, isBlooming, scale = 1 }) => (
       <svg viewBox="0 0 200 215" className="w-full h-full max-h-full overflow-visible pixelated" preserveAspectRatio="xMidYMid meet">
-        <PlantGraphic plant={plant} isBlooming={isBlooming} soilBaseY={168} />
+        <g transform={`scale(${scale}) translate(${100 * (1 - scale)}, ${215 * (1 - scale)})`}>
+          <PlantGraphic plant={plant} isBlooming={isBlooming} soilBaseY={168} />
+        </g>
       </svg>
     );
 
@@ -282,7 +312,6 @@
         try { return localStorage.getItem('plant_dark_mode') !== 'false'; } catch (e) { return true; }
       });
 
-      // Audio State & Ref
       const audioRef = useRef(null);
       const [musicPlaying, setMusicPlaying] = useState(false);
 
@@ -317,7 +346,6 @@
 
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2000); };
 
-      // Game Loop
       useEffect(() => {
         if (screen !== 'game' || !plant || plant.isDead || revealModal.open || tutorialOpen) return;
 
@@ -542,7 +570,7 @@
 
               <div className="flex-1 min-h-0 grid grid-cols-12 gap-3 my-2 items-stretch retro-panel p-2">
                 <div className="col-span-7 h-full flex flex-col items-center justify-center relative bg-slate-100 dark:bg-black border-4 border-slate-700 dark:border-retro-border overflow-hidden">
-                  <PlantViewport plant={plant} isBlooming={isBlooming} />
+                  <PlantViewport plant={plant} isBlooming={isBlooming} scale={1} />
                 </div>
                 <div className="col-span-5 flex flex-col justify-between py-1 px-1">
                   {['moisture', 'sunlight', 'temperature', 'soilHealth', 'infestation'].map((cond, i) => {
@@ -699,7 +727,7 @@
                         <g className="cursor-pointer" onClick={() => setInspectedPlant(sp)}>
                           <ellipse cx={spot.x} cy={spot.y + 1} rx={28 * spot.scale} ry={5 * spot.scale} fill="#000" opacity="0.35" />
                           <g transform={`translate(${spot.x}, ${spot.y}) scale(${spot.scale}) translate(-100, -214)`}>
-                            <PlantGraphic plant={sp} isBlooming={true} />
+                            <PlantGraphic plant={sp} isBlooming={true} soilBaseY={168} />
                           </g>
                           <g transform={`translate(${spot.x - 22 * spot.scale}, ${spot.plateY})`}>
                             <rect width={44 * spot.scale} height={9 * spot.scale} fill="#ca8a04" stroke="#000" strokeWidth="1" />
