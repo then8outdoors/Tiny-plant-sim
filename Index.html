@@ -54,7 +54,7 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // --- PIXEL MATRIX ENGINE DATA ---
+    // --- PIXEL MATRIX ENGINE DATA (Each row is 16px wide) ---
     const SPRITES = {
       POT: [
         " 00000000000000 ",
@@ -71,57 +71,405 @@
         "   00000000000  "
       ],
       SEEDLING: [
-        [ "      44        ", "     4544       ", "    45544       ", " 44 4544        ", "4544  6         ", "4554  6         ", " 44   6         ", "      6         ", "      6         ", "      6         " ],
-        [ "       44       ", "      4544      ", "     45544      ", "  44 4544       ", " 4544 6         ", " 4554 6         ", "  44  6         ", "      6         ", "      6         ", "      6         " ]
+        [
+          "      44        ",
+          "     4544       ",
+          "    45544       ",
+          " 44 4544        ",
+          "4544  6         ",
+          "4554  6         ",
+          " 44   6         ",
+          "      6         ",
+          "      6         ",
+          "      6         "
+        ],
+        [
+          "       44       ",
+          "      4544      ",
+          "     45544      ",
+          "  44 4544       ",
+          " 4544 6         ",
+          " 4554 6         ",
+          "  44  6         ",
+          "      6         ",
+          "      6         ",
+          "      6         "
+        ]
       ],
+      // 1. BROAD AROID (Tropical broad leaves on branching stems)
       LEAFY_MATURE: [
-        [ "     444        ", "    4555444     ", "   455545554    ", "   4544 4454    ", " 444  6   4     ", "45554 6 444     ", "45454 645554    ", " 444  645454    ", "      6 444     ", "  444 6         ", " 455546         ", " 454546         ", "  444 6         ", "      6         ", "      6         " ],
-        [ "      444       ", "     4555444    ", "    455545554   ", "    4544 4454   ", "  444 6   4     ", " 455546 444     ", " 45454645554    ", "  444 645454    ", "      6 444     ", "   4446         ", "  45554         ", "  45454         ", "   4446         ", "      6         ", "      6         " ]
+        [
+          "     4444       ",
+          "    455554      ",
+          "    456554      ",
+          "     4444       ",
+          "  444  6  444   ",
+          " 45554 6 45554  ",
+          " 45654 6 45654  ",
+          "  44466666444   ",
+          "       6        ",
+          "   444 6        ",
+          "  455546        ",
+          "  456546        ",
+          "   44466        ",
+          "       6        ",
+          "       6        "
+        ],
+        [
+          "      4444      ",
+          "     455554     ",
+          "     456554     ",
+          "      4444      ",
+          "   444 6   444  ",
+          "  455546  45554 ",
+          "  456546  45654 ",
+          "   44466666444  ",
+          "       6        ",
+          "    4446        ",
+          "   45554        ",
+          "   45654        ",
+          "    4446        ",
+          "       6        ",
+          "       6        "
+        ]
       ],
       LEAFY_BLOOM: [
-        [ "      77        ", "     7887       ", "    788887      ", "     7887       ", "      77        ", "     444        ", "    4555444     ", "   455545554    ", "   4544 4454    ", " 444  6   4     ", "45554 6 444     ", "45454 645554    ", " 444  645454    ", "      6 444     ", "      6         " ],
-        [ "       77       ", "      7887      ", "     789887     ", "      7887      ", "       77       ", "      444       ", "     4555444    ", "    455545554   ", "    4544 4454   ", "  444 6   4     ", " 455546 444     ", " 45454645554    ", "  444 645454    ", "      6 444     ", "      6         " ]
+        [
+          "      777       ",
+          "     78987      ",
+          "     78987      ",
+          "      787       ",
+          "  444  6  444   ",
+          " 45554 6 45554  ",
+          " 45654 6 45654  ",
+          "  44466666444   ",
+          "       6        ",
+          "   444 6        ",
+          "  455546        ",
+          "  456546        ",
+          "   44466        ",
+          "       6        ",
+          "       6        "
+        ],
+        [
+          "       777      ",
+          "      78987     ",
+          "      78987     ",
+          "       787      ",
+          "   444 6   444  ",
+          "  455546  45554 ",
+          "  456546  45654 ",
+          "   44466666444  ",
+          "       6        ",
+          "    4446        ",
+          "   45554        ",
+          "   45654        ",
+          "    4446        ",
+          "       6        ",
+          "       6        "
+        ]
       ],
+      // 2. DESERT CACTUS (Ribbed saguaro column with side arms)
       CACTUS_MATURE: [
-        [ "     00000      ", "    0212330     ", "    0122230     ", "    0122230 000 ", " 000012223003210", "0123012223032210", "0122012223022210", "012201222300000 ", " 0000122230     ", "    0122230     ", "    0122230     ", "    0122230     ", "    0122230     ", "    0122230     ", "    0000000     " ],
-        [ "      00000     ", "     0212330    ", "     0122230    ", "  0000122230 000", " 012301222300321", " 012201222303221", " 012201222302221", "  00001222300000", "     0122230    ", "     0122230    ", "     0122230    ", "     0122230    ", "     0122230    ", "     0122230    ", "     0000000    " ]
+        [
+          "     00000      ",
+          "    0212330     ",
+          "    0122230     ",
+          "    0122230 000 ",
+          " 000012223003210",
+          "0123012223032210",
+          "0122012223022210",
+          "012201222300000 ",
+          " 0000122230     ",
+          "    0122230     ",
+          "    0122230     ",
+          "    0122230     ",
+          "    0122230     ",
+          "    0122230     ",
+          "    0000000     "
+        ],
+        [
+          "      00000     ",
+          "     0212330    ",
+          "     0122230    ",
+          "  0000122230 000",
+          " 012301222300321",
+          " 012201222303221",
+          " 012201222302221",
+          "  00001222300000",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    ",
+          "     0000000    "
+        ]
       ],
       CACTUS_BLOOM: [
-        [ "      888       ", "     89898      ", "     88888      ", "     00000      ", "    0212330     ", "    0122230     ", "    0122230 000 ", " 000012223003210", "0123012223032210", "0122012223022210", "012201222300000 ", " 0000122230     ", "    0122230     ", "    0122230     ", "    0122230     " ],
-        [ "       888      ", "      89898     ", "       888      ", "      00000     ", "     0212330    ", "     0122230    ", "  0000122230 000", " 012301222300321", " 012201222303221", " 012201222302221", "  00001222300000", "     0122230    ", "     0122230    ", "     0122230    ", "     0122230    " ]
+        [
+          "      888       ",
+          "     89898      ",
+          "     88888      ",
+          "     00000      ",
+          "    0212330     ",
+          "    0122230     ",
+          "    0122230 000 ",
+          " 000012223003210",
+          "0123012223032210",
+          "0122012223022210",
+          "012201222300000 ",
+          " 0000122230     ",
+          "    0122230     ",
+          "    0122230     ",
+          "    0122230     "
+        ],
+        [
+          "       888      ",
+          "      89898     ",
+          "       888      ",
+          "      00000     ",
+          "     0212330    ",
+          "     0122230    ",
+          "  0000122230 000",
+          " 012301222300321",
+          " 012201222303221",
+          " 012201222302221",
+          "  00001222300000",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    ",
+          "     0122230    "
+        ]
       ],
+      // 3. FLESHY SUCCULENT (Low, wide geometric rosette hugging the soil)
       SUCCULENT_MATURE: [
-        [ "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "       44       ", "    44455444    ", "   4554554554   ", " 44555466455544 ", " 45566466466554 ", "  4444 44 4444  " ],
-        [ "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "                ", "       44       ", "    44455444    ", "   4554554554   ", "  455546645554  ", " 45566466466554 ", " 44444 44 44444 " ]
+        [
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "      4444      ",
+          "    44555544    ",
+          "   4554664554   ",
+          "  455455554554  ",
+          " 45545566554554 ",
+          " 45645566554654 ",
+          "  444444444444  "
+        ],
+        [
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "                ",
+          "      4444      ",
+          "    44555544    ",
+          "   4554664554   ",
+          "  455455554554  ",
+          " 45645566554654 ",
+          " 45645566554654 ",
+          "  444444444444  "
+        ]
       ],
       SUCCULENT_BLOOM: [
-        [ "                ", "                ", "       77       ", "      7887      ", "       77       ", "       66       ", "       66       ", "       66       ", "       66       ", "       44       ", "    44455444    ", "   4554554554   ", " 44555466455544 ", " 45566466466554 ", "  4444 44 4444  " ],
-        [ "                ", "                ", "       77       ", "      7897      ", "       77       ", "       66       ", "       66       ", "       66       ", "       66       ", "       44       ", "    44455444    ", "   4554554554   ", "  455546645554  ", " 45566466466554 ", " 44444 44 44444 " ]
+        [
+          "          777   ",
+          "         78987  ",
+          "          787   ",
+          "         66     ",
+          "        66      ",
+          "       66       ",
+          "       6        ",
+          "       6        ",
+          "      4444      ",
+          "    44555544    ",
+          "   4554664554   ",
+          "  455455554554  ",
+          " 45545566554554 ",
+          " 45645566554654 ",
+          "  444444444444  "
+        ],
+        [
+          "           777  ",
+          "          78987 ",
+          "           787  ",
+          "          66    ",
+          "         66     ",
+          "        66      ",
+          "       66       ",
+          "       6        ",
+          "      4444      ",
+          "    44555544    ",
+          "   4554664554   ",
+          "  455455554554  ",
+          " 45645566554654 ",
+          " 45645566554654 ",
+          "  444444444444  "
+        ]
       ],
+      // 4. CANOPY FERN (Fountain of feathery arching fronds)
       FERN_MATURE: [
-        [ "       44       ", "      4554      ", "  444455554444  ", " 45555455455554 ", " 45455455455454 ", "  445554455544  ", "  455555555554  ", " 45545555554554 ", " 444 455554 444 ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "       44       " ],
-        [ "        44      ", "       4554     ", "   44445555444  ", "  4555545545554 ", "  45455455455454", "   445554455544 ", "   455555555554 ", "  45545555554554", "  444 455554 444", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "        44      " ]
+        [
+          "                ",
+          "                ",
+          "   44      44   ",
+          "  4554 44 4554  ",
+          " 45654455445654 ",
+          "454 45566554 454",
+          "44 4554664554 44",
+          "  454 4664 454  ",
+          " 454 456654 454 ",
+          " 44  454454  44 ",
+          "    454  454    ",
+          "    44 66 44    ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ],
+        [
+          "                ",
+          "                ",
+          "    44    44    ",
+          "   4554444554   ",
+          "  456545545654  ",
+          " 454 456654 454 ",
+          " 44 45566554 44 ",
+          "   454 66 454   ",
+          "  454 4664 454  ",
+          "  44  4554  44  ",
+          "     454454     ",
+          "     446644     ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ]
       ],
       FERN_BLOOM: [
-        [ "       44       ", "      4554      ", " 74444555544447 ", " 45555455455554 ", " 45455455455454 ", "  445554455544  ", "  455555555554  ", " 45545555554554 ", " 444 455554 444 ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "      4554      ", "       44       " ],
-        [ "        44      ", "       4554     ", "  7444455554447 ", "  4555545545554 ", "  45455455455454", "   445554455544 ", "   455555555554 ", "  45545555554554", "  444 455554 444", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "       4554     ", "        44      " ]
+        [
+          "       77       ",
+          "      7897      ",
+          "   44  77  44   ",
+          "  4554 66 4554  ",
+          " 45654455445654 ",
+          "454 45566554 454",
+          "78 4554664554 87",
+          "77454 4664 45477",
+          " 454 456654 454 ",
+          " 44  454454  44 ",
+          "    454  454    ",
+          "    44 66 44    ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ],
+        [
+          "        77      ",
+          "       7987     ",
+          "    44  77 44   ",
+          "   4554664554   ",
+          "  456545545654  ",
+          " 454 456654 454 ",
+          " 78 45566554 87 ",
+          " 77454 66 45477 ",
+          "  454 4664 454  ",
+          "  44  4554  44  ",
+          "     454454     ",
+          "     446644     ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ]
       ],
+      // 5. SUN CHASER (Tall sunflower stalk with golden bud -> huge radiant bloom)
       SUNFLOWER_MATURE: [
-        [ "                ", "                ", "                ", "       66       ", "       66       ", "       66       ", "       66       ", "      4664      ", "     456654     ", "    45566554    ", "    44466444    ", "       66       ", "       66       ", "       66       ", "       66       " ],
-        [ "                ", "                ", "                ", "        66      ", "        66      ", "        66      ", "        66      ", "       4664     ", "      456654    ", "     45566554   ", "     44466444   ", "        66      ", "        66      ", "        66      ", "        66      " ]
+        [
+          "                ",
+          "                ",
+          "      4444      ",
+          "     488884     ",
+          "     466664     ",
+          "      4664      ",
+          "       66       ",
+          "   444 66 444   ",
+          "  455546645554  ",
+          "  456556655654  ",
+          "   4444664444   ",
+          "       66       ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ],
+        [
+          "                ",
+          "                ",
+          "       4444     ",
+          "      488884    ",
+          "      466664    ",
+          "       4664     ",
+          "       66       ",
+          "    44466 444   ",
+          "   45556645554  ",
+          "   45656655654  ",
+          "    444664444   ",
+          "       66       ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ]
       ],
       SUNFLOWER_BLOOM: [
-        [ "       77       ", "      7887      ", "     789987     ", "     789987     ", "      7887      ", "       77       ", "       66       ", "      4664      ", "     456654     ", "    45566554    ", "    44466444    ", "       66       ", "       66       ", "       66       ", "       66       " ],
-        [ "        77      ", "       7887     ", "      789987    ", "      789987    ", "       7887     ", "        77      ", "        66      ", "       4664     ", "      456654    ", "     45566554   ", "     44466444   ", "        66      ", "        66      ", "        66      ", "        66      " ]
+        [
+          "     777777     ",
+          "    78888887    ",
+          "   7889999887   ",
+          "   7889999887   ",
+          "    78888887    ",
+          "     776677     ",
+          "       66       ",
+          "   444 66 444   ",
+          "  455546645554  ",
+          "  456556655654  ",
+          "   4444664444   ",
+          "       66       ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ],
+        [
+          "      777777    ",
+          "     78888887   ",
+          "    7889999887  ",
+          "    7889999887  ",
+          "     78888887   ",
+          "      776677    ",
+          "       66       ",
+          "    44466 444   ",
+          "   45556645554  ",
+          "   45656655654  ",
+          "    444664444   ",
+          "       66       ",
+          "       66       ",
+          "       66       ",
+          "       66       "
+        ]
       ]
     };
 
+    // --- GAME DATA & LOGIC ---
     const PLANT_ARCHETYPES = {
       leafy: { name: 'BROAD AROID', tagline: 'BALANCED LIGHT & STEADY WARMTH.', moisture: [45, 75], sunlight: [40, 75], temp: [65, 82], soil: [50, 90], pal: { '4':'#000', '5':'#4ade80', '6':'#166534', '7':'#000', '8':'#ffffff', '9':'#facc15' } },
       cactus: { name: 'DESERT CACTUS', tagline: 'LOVES INTENSE SUN & LITTLE WATER.', moisture: [10, 35], sunlight: [65, 95], temp: [72, 95], soil: [25, 65], pal: { '0':'#000', '1':'#4ade80', '2':'#16a34a', '3':'#14532d', '8':'#ef4444', '9':'#facc15' } },
-      succulent: { name: 'FLESHY SUCCULENT', tagline: 'THRIVES IN WARMTH & DRY SOIL.', moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75], pal: { '4':'#000', '5':'#0d9488', '6':'#0f766e', '7':'#000', '8':'#facc15', '9':'#ffffff' } },
-      fern: { name: 'CANOPY FERN', tagline: 'CRAVES MOISTURE & GENTLE SHADE.', moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95], pal: { '4':'#000', '5':'#22c55e', '6':'#14532d', '7':'#0ea5e9', '8':'#0ea5e9', '9':'#ffffff' } },
-      sunflower: { name: 'SUN CHASER', tagline: 'WORSHIPS THE BLAZING SUN.', moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90], pal: { '4':'#000', '5':'#ca8a04', '6':'#16a34a', '7':'#000', '8':'#facc15', '9':'#451a03' } }
+      succulent: { name: 'FLESHY SUCC', tagline: 'THRIVES IN WARMTH & DRY SOIL.', moisture: [20, 45], sunlight: [55, 85], temp: [65, 88], soil: [40, 75], pal: { '4':'#000', '5':'#2dd4bf', '6':'#0f766e', '7':'#000', '8':'#fb7185', '9':'#fef08a' } },
+      fern: { name: 'CANOPY FERN', tagline: 'CRAVES MOISTURE & GENTLE SHADE.', moisture: [60, 90], sunlight: [25, 55], temp: [60, 76], soil: [60, 95], pal: { '4':'#000', '5':'#22c55e', '6':'#14532d', '7':'#0284c7', '8':'#38bdf8', '9':'#ffffff' } },
+      sunflower: { name: 'SUN CHASER', tagline: 'WORSHIPS THE BLAZING SUN.', moisture: [40, 70], sunlight: [75, 100], temp: [70, 92], soil: [50, 90], pal: { '4':'#000', '5':'#4ade80', '6':'#16a34a', '7':'#78350f', '8':'#facc15', '9':'#451a03' } }
     };
 
     function getArch(type) { return PLANT_ARCHETYPES[type] || PLANT_ARCHETYPES['leafy']; }
@@ -146,11 +494,11 @@
       const randomReveal = Math.floor(Math.random() * (12 - 6 + 1)) + 6;
 
       const potColors = [
-        { '1':'#fb923c', '2':'#ea580c', '3':'#9a3412' },
-        { '1':'#38bdf8', '2':'#0284c7', '3':'#075985' },
-        { '1':'#34d399', '2':'#059669', '3':'#064e3b' },
-        { '1':'#a78bfa', '2':'#7c3aed', '3':'#4c1d95' },
-        { '1':'#94a3b8', '2':'#475569', '3':'#1e293b' }
+        { '1':'#fb923c', '2':'#ea580c', '3':'#9a3412' }, // Orange
+        { '1':'#38bdf8', '2':'#0284c7', '3':'#075985' }, // Blue
+        { '1':'#34d399', '2':'#059669', '3':'#064e3b' }, // Green
+        { '1':'#a78bfa', '2':'#7c3aed', '3':'#4c1d95' }, // Purple
+        { '1':'#94a3b8', '2':'#475569', '3':'#1e293b' }  // Slate
       ];
 
       return {
@@ -215,6 +563,7 @@
 
       if (!plant) return null;
 
+      // 1. Determine Dynamic Palette Status
       const arch = getArch(plant.type);
       const moisture = plant.conditions?.moisture ?? 50;
       const mMin = plant.ideals?.moisture?.[0] ?? 0;
@@ -224,45 +573,44 @@
       if (plant.isDead) {
         currentPal = { '0':'#000', '1':'#475569', '2':'#334155', '3':'#1e293b', '4':'#000', '5':'#64748b', '6':'#475569', '7':'#000', '8':'#94a3b8', '9':'#cbd5e1' };
       } else if (plant.health < 35) {
-        if (moisture < mMin) currentPal = { '0':'#000', '1':'#d97706', '2':'#b45309', '3':'#78350f', '4':'#000', '5':'#f59e0b', '6':'#b45309', '7':'#000', '8':'#fcd34d', '9':'#fef3c7' };
-        else if (moisture > mMax) currentPal = { '0':'#000', '1':'#064e3b', '2':'#022c22', '3':'#000000', '4':'#000', '5':'#047857', '6':'#064e3b', '7':'#000', '8':'#6ee7b7', '9':'#a7f3d0' };
+        if (moisture < mMin) currentPal = { '0':'#000', '1':'#d97706', '2':'#b45309', '3':'#78350f', '4':'#000', '5':'#f59e0b', '6':'#b45309', '7':'#000', '8':'#fcd34d', '9':'#fef3c7' }; // Dried
+        else if (moisture > mMax) currentPal = { '0':'#000', '1':'#064e3b', '2':'#022c22', '3':'#000000', '4':'#000', '5':'#047857', '6':'#064e3b', '7':'#000', '8':'#6ee7b7', '9':'#a7f3d0' }; // Rot
       }
 
+      // Base Pot Palette
       const potPal = { '0': '#000000', ...(plant.potPal || { '1':'#fb923c', '2':'#ea580c', '3':'#9a3412' }) };
 
+      // 2. Select Distinct Species Sprite based on Stage & Type
       let activeSprite = SPRITES.SEEDLING[frame];
       let pOffsetX = 100 - (8 * 4);
       let pOffsetY = soilBaseY - (10 * 4);
 
       if (plant.revealed) {
-        const family = plant.type.toUpperCase();
-        if (SPRITES[`${family}_MATURE`]) {
-          if (isBlooming && SPRITES[`${family}_BLOOM`]) {
-            activeSprite = SPRITES[`${family}_BLOOM`][frame];
-          } else {
-            activeSprite = SPRITES[`${family}_MATURE`][frame];
-          }
-          pOffsetY = soilBaseY - (15 * 4);
+        const family = (plant.type || 'leafy').toUpperCase();
+        if (isBlooming && SPRITES[`${family}_BLOOM`]) {
+          activeSprite = SPRITES[`${family}_BLOOM`][frame];
+        } else if (SPRITES[`${family}_MATURE`]) {
+          activeSprite = SPRITES[`${family}_MATURE`][frame];
         } else {
-          // Fallback to LEAFY
-          if (isBlooming && SPRITES.LEAFY_BLOOM) {
-            activeSprite = SPRITES.LEAFY_BLOOM[frame];
-          } else {
-            activeSprite = SPRITES.LEAFY_MATURE[frame];
-          }
-          pOffsetY = soilBaseY - (15 * 4);
+          activeSprite = isBlooming ? SPRITES.LEAFY_BLOOM[frame] : SPRITES.LEAFY_MATURE[frame];
         }
+        pOffsetY = soilBaseY - (15 * 4);
       }
 
       return (
         <g>
+          {/* Bugs */}
           {plant.conditions?.infestation > 10 && (
             <g fill="#ff003c" className="bug-idle-anim">
               <rect x="85" y={soilBaseY - 30} width="4" height="4" /><rect x="115" y={soilBaseY - 45} width="4" height="4" />
               <rect x="102" y={soilBaseY - 60} width="4" height="4" /><rect x="75" y={soilBaseY - 15} width="4" height="4" />
             </g>
           )}
+
+          {/* Render Active Plant Sprite */}
           <PixelLayer matrix={activeSprite} palette={currentPal} offsetX={pOffsetX} offsetY={pOffsetY} pixelSize={4} />
+
+          {/* Render Pot Base */}
           <PixelLayer matrix={SPRITES.POT} palette={potPal} offsetX={100 - (8 * 4)} offsetY={soilBaseY - (1 * 4)} pixelSize={4} />
         </g>
       );
@@ -306,6 +654,7 @@
       const [nameModal, setNameModal] = useState({ open: false, slotIndex: 0, currentName: '', isNew: false });
       const [revealModal, setRevealModal] = useState({ open: false, plantType: null });
       const [tutorialOpen, setTutorialOpen] = useState(false);
+      const [tutorialPage, setTutorialPage] = useState(1);
       const [inspectedPlant, setInspectedPlant] = useState(null);
       
       const [darkMode, setDarkMode] = useState(() => {
@@ -326,6 +675,11 @@
               .catch(err => console.log("Audio play blocked", err));
           }
         }
+      };
+
+      const openGuide = () => {
+        setTutorialPage(1);
+        setTutorialOpen(true);
       };
 
       useEffect(() => {
@@ -476,7 +830,7 @@
               <div className="flex justify-between items-center px-1 py-1">
                 <span className="text-[10px] text-emerald-700 dark:text-retro-neonGreen font-bold">TINY PLANT SIM</span>
                 <div className="flex items-center gap-1.5">
-                  <button onClick={() => setTutorialOpen(true)} className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1 text-[8px] hover:text-black dark:hover:text-white font-bold">
+                  <button onClick={openGuide} className="retro-btn bg-white dark:bg-black text-amber-600 dark:text-retro-yellow px-2 py-1 text-[8px] hover:text-black dark:hover:text-white font-bold">
                     ? GUIDE
                   </button>
                   <button onClick={toggleMusic} className={`retro-btn bg-white dark:bg-black p-1 text-[8px] flex items-center justify-center ${musicPlaying ? 'text-emerald-500 dark:text-retro-neonGreen' : 'text-slate-400 dark:text-slate-600'}`}>
@@ -770,21 +1124,94 @@
             </div>
           )}
 
-          {/* ======================= MODAL: TUTORIAL ======================= */}
+          {/* ======================= MODAL: TUTORIAL (2 PAGES) ======================= */}
           {tutorialOpen && (
             <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-              <div className="w-full max-w-xs retro-panel border-amber-500 dark:border-retro-yellow p-4 flex flex-col max-h-[90vh]">
-                <div className="text-center pb-2 mb-2 border-b-2 border-slate-400 dark:border-retro-border">
-                  <span className="text-[10px] text-amber-600 dark:text-retro-yellow font-bold">FIELD MANUAL</span>
+              <div className="w-full max-w-xs retro-panel border-amber-500 dark:border-retro-yellow p-4 flex flex-col max-h-[88vh]">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-slate-400 dark:border-retro-border">
+                  <span className="text-[10px] text-amber-600 dark:text-retro-yellow font-bold">
+                    {tutorialPage === 1 ? 'FIELD MANUAL' : 'SPECIES INDEX'}
+                  </span>
+                  <span className="text-[8px] text-slate-500 dark:text-retro-border font-bold">
+                    PG {tutorialPage}/2
+                  </span>
                 </div>
-                <div className="overflow-y-auto space-y-3 text-[8px] pr-1 leading-relaxed text-slate-800 dark:text-slate-200">
-                  <div><span className="text-emerald-600 dark:text-retro-neonGreen font-bold">1. STATUS METERS:</span><p className="text-slate-600 dark:text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p></div>
-                  <div><span className="text-emerald-600 dark:text-retro-neonGreen font-bold">2. CARE ACTIONS:</span><p className="text-slate-600 dark:text-retro-border mt-0.5"><span className="text-black dark:text-white font-bold">WATER:</span> +Moisture</p><p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">FEED:</span> +Dirt nutrients</p><p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">SPRAY:</span> Clears bug swarms</p><p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">PRUNE:</span> Trims leaves for +HP</p></div>
-                  <div><span className="text-emerald-600 dark:text-retro-neonGreen font-bold">3. CLIMATE DIALS:</span><p className="text-slate-600 dark:text-retro-border mt-0.5">Use <span className="text-black dark:text-white font-bold">SUN (+/-)</span> and <span className="text-black dark:text-white font-bold">TMP (+/-)</span> buttons to balance the room environment.</p></div>
-                  <div><span className="text-emerald-600 dark:text-retro-neonGreen font-bold">4. MYSTERY SEEDS:</span><p className="text-slate-600 dark:text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p></div>
-                  <div><span className="text-emerald-600 dark:text-retro-neonGreen font-bold">5. SUNROOM RETIREMENT:</span><p className="text-slate-600 dark:text-retro-border mt-0.5">Keep HP above 0. If your plant survives to Day 20, you can retire it to your permanent Sunroom collection!</p></div>
+
+                {tutorialPage === 1 ? (
+                  <div className="overflow-y-auto space-y-3 text-[8px] pr-1 leading-relaxed text-slate-800 dark:text-slate-200">
+                    <div>
+                      <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">1. STATUS METERS:</span>
+                      <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep all meters in the GREEN range. Meters decay naturally over time.</p>
+                    </div>
+                    <div>
+                      <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">2. CARE ACTIONS:</span>
+                      <p className="text-slate-600 dark:text-retro-border mt-0.5"><span className="text-black dark:text-white font-bold">WATER:</span> +Moisture</p>
+                      <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">FEED:</span> +Dirt nutrients</p>
+                      <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">SPRAY:</span> Clears bug swarms</p>
+                      <p className="text-slate-600 dark:text-retro-border"><span className="text-black dark:text-white font-bold">PRUNE:</span> Trims leaves for +HP</p>
+                    </div>
+                    <div>
+                      <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">3. CLIMATE DIALS:</span>
+                      <p className="text-slate-600 dark:text-retro-border mt-0.5">Use <span className="text-black dark:text-white font-bold">SUN (+/-)</span> and <span className="text-black dark:text-white font-bold">TMP (+/-)</span> buttons to balance the room environment.</p>
+                    </div>
+                    <div>
+                      <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">4. MYSTERY SEEDS:</span>
+                      <p className="text-slate-600 dark:text-retro-border mt-0.5">Every plant begins unknown. Once it reaches maturity, its true species and exact ideal ranges are revealed!</p>
+                    </div>
+                    <div>
+                      <span className="text-emerald-600 dark:text-retro-neonGreen font-bold">5. SUNROOM RETIREMENT:</span>
+                      <p className="text-slate-600 dark:text-retro-border mt-0.5">Keep HP above 0. If your plant survives to Day 20, you can retire it to your permanent Sunroom collection!</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-y-auto space-y-2 text-[7px] pr-1 leading-relaxed text-slate-800 dark:text-slate-200">
+                    <p className="text-slate-500 dark:text-retro-border text-[8px] pb-0.5">
+                      5 SPECIES CAN SPROUT:
+                    </p>
+                    {Object.entries(PLANT_ARCHETYPES).map(([key, arch]) => {
+                      const bloomKey = `${key.toUpperCase()}_BLOOM`;
+                      const matureKey = `${key.toUpperCase()}_MATURE`;
+                      const previewMatrix = SPRITES[bloomKey]
+                        ? SPRITES[bloomKey][0]
+                        : SPRITES[matureKey]
+                        ? SPRITES[matureKey][0]
+                        : SPRITES.LEAFY_MATURE[0];
+                      return (
+                        <div key={key} className="bg-slate-100 dark:bg-black border-2 border-slate-400 dark:border-slate-700 p-2 flex items-center gap-2.5">
+                          <div className="w-8 h-8 shrink-0 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
+                            <svg viewBox="0 0 32 30" className="w-7 h-7 pixelated">
+                              <PixelLayer matrix={previewMatrix} palette={arch.pal} pixelSize={2} />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-emerald-700 dark:text-retro-neonGreen font-bold text-[8px] truncate">{arch.name}</div>
+                            <p className="text-slate-600 dark:text-retro-border mt-0.5 leading-normal">{arch.tagline}</p>
+                            <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-[6px] font-bold">
+                              <span className="text-blue-600 dark:text-retro-blue">H2O:{arch.moisture[0]}-{arch.moisture[1]}%</span>
+                              <span className="text-amber-600 dark:text-retro-yellow">SUN:{arch.sunlight[0]}-{arch.sunlight[1]}%</span>
+                              <span className="text-rose-600 dark:text-rose-400">TMP:{arch.temp[0]}-{arch.temp[1]}°</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="flex gap-2 mt-4">
+                  {tutorialPage === 1 ? (
+                    <button onClick={() => setTutorialPage(2)} className="retro-btn flex-1 py-2.5 bg-amber-400 dark:bg-retro-yellow text-black text-[8px] font-bold">
+                      SPECIES >
+                    </button>
+                  ) : (
+                    <button onClick={() => setTutorialPage(1)} className="retro-btn flex-1 py-2.5 bg-slate-200 dark:bg-black text-black dark:text-white text-[8px] font-bold">
+                      < BASICS
+                    </button>
+                  )}
+                  <button onClick={() => setTutorialOpen(false)} className="retro-btn flex-1 py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] font-bold">
+                    DISMISS
+                  </button>
                 </div>
-                <button onClick={() => setTutorialOpen(false)} className="retro-btn w-full py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] mt-4 font-bold">DISMISS</button>
               </div>
             </div>
           )}
