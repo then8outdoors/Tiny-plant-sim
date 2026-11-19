@@ -110,6 +110,7 @@
           "      6         "
         ]
       ],
+      // 1. BROAD AROID (Tropical broad leaves on branching stems)
       LEAFY_MATURE: [
         [
           "     4444       ",
@@ -182,6 +183,7 @@
           "       6        "
         ]
       ],
+      // 2. DESERT CACTUS (Ribbed saguaro column with side arms)
       CACTUS_MATURE: [
         [
           "     00000      ",
@@ -254,6 +256,7 @@
           "     0122230    "
         ]
       ],
+      // 3. FLESHY SUCCULENT (Low, wide geometric rosette hugging the soil)
       SUCCULENT_MATURE: [
         [
           "                ",
@@ -326,6 +329,7 @@
           "  444444444444  "
         ]
       ],
+      // 4. CANOPY FERN (Fountain of feathery arching fronds)
       FERN_MATURE: [
         [
           "                ",
@@ -398,6 +402,7 @@
           "       66       "
         ]
       ],
+      // 5. SUN CHASER (Tall sunflower stalk with golden bud -> huge radiant bloom)
       SUNFLOWER_MATURE: [
         [
           "                ",
@@ -1254,11 +1259,11 @@
                 <div className="flex gap-2 mt-4">
                   {tutorialPage === 1 ? (
                     <button onClick={() => setTutorialPage(2)} className="retro-btn flex-1 py-2.5 bg-amber-400 dark:bg-retro-yellow text-black text-[8px] font-bold">
-                      SPECIES >
+                      {'SPECIES >'}
                     </button>
                   ) : (
                     <button onClick={() => setTutorialPage(1)} className="retro-btn flex-1 py-2.5 bg-slate-200 dark:bg-black text-black dark:text-white text-[8px] font-bold">
-                      < BASICS
+                      {'< BASICS'}
                     </button>
                   )}
                   <button onClick={() => setTutorialOpen(false)} className="retro-btn flex-1 py-2.5 bg-emerald-500 dark:bg-retro-neonGreen text-black text-[8px] font-bold">
